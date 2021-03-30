@@ -346,7 +346,7 @@ const EditorCanvas = (props) => {
                                         root={rootSVG}
                                         editable={editorAction === 'edit'}
                                         selectable={editorAction === 'select'}
-                                        content={content.props.children}
+                                        content={content}
                                         onLayerChange={(value) => {
                                             setLayersBar(value);
                                             setParentLayer(false);
@@ -360,6 +360,7 @@ const EditorCanvas = (props) => {
                         <g id='controls-container' ref={div => controlsRef = div} />
                     </svg>
                 </div>
+
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 {
   "name": "subjx-mapper",
+  "homepage": "http://nichollascarter.github.io/subjx-mapper",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -14,14 +15,19 @@
     "react-redux": "^7.2.2",
     "react-scripts": "3.2.0",
     "redux": "^4.0.5",
-    "subjx": "^0.3.6",
+    "subjx": "^0.3.7",
     "svg-drag-select": "^0.4.1"
+  },
+  "devDependencies": {
+    "gh-pages": "^3.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"

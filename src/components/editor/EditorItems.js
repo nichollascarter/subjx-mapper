@@ -35,11 +35,9 @@ const EditorItems = (props) => {
             maxWidth: '150px',
             textColor: 'transparent'
         },
-        onInit(el) {
-            // console.log(el);
-        },
+        onInit() {},
         onDrop(e) {
-            const itemType = e.target.getAttribute('data-type');
+            const itemType = this.el.getAttribute('data-type');
             let newItem = null;
 
             const editorRef = document.querySelector('#editor-background');
@@ -47,7 +45,7 @@ const EditorItems = (props) => {
             const offset = editorRef.getBoundingClientRect(),
                 x = e.clientX - offset.left + editorRef.scrollLeft,
                 y = e.clientY - offset.top + editorRef.scrollTop;
-            // console.log(offset)
+
             switch (itemType) {
 
                 case 'rectangle':
@@ -100,7 +98,15 @@ const EditorItems = (props) => {
                             stroke: 'black',
                             fill: 'transparent'
                         },
-                        []
+                        [
+                            [
+                                'div',
+                                {
+                                    display: 'block'
+                                },
+                                []
+                            ]
+                        ]
                     ];
                     break;
                 case 'text':

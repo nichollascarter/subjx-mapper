@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import parse from 'html-react-parser';
@@ -122,27 +123,14 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const defaultContent = () => (
-    React.createElement(
-        'g',
-        {
-            id: 'svg-content'
-        },
-        []
-    )
-);
-
 const Editor = () => {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
     const [leftOffset, setLeftOffset] = useState(57);
+    const [content, setContent] = useState(null);
 
     const parsedStyleSheet = new CSSStyleSheet();
-
-    const [content, setContent] = useState(
-        defaultContent()
-    );
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -215,15 +203,22 @@ const Editor = () => {
     };
 
     const handleImport = (res) => {
-        let DOM = parse(res, parserOptions);
+        let reactSVGEl = parse(res, parserOptions);
 
-        if (Array.isArray(DOM)) {
-            DOM = DOM.find(item => (
+        if (Array.isArray(reactSVGEl)) {
+            reactSVGEl = reactSVGEl.find(item => (
                 typeof item === 'object' && item.type === 'svg'
             ));
         }
 
-        setContent(DOM);
+        const element = document.createElement('div');
+        
+        // this is a temporary decision to convert html to dom
+        // maybe in the future it is need to use react way to import complex html tree
+        ReactDOM.render(reactSVGEl, element, () => {
+            setContent(element.childNodes[0]);
+            ReactDOM.unmountComponentAtNode(element);
+        });
     };
 
     const handleExport = () => {
@@ -241,10 +236,10 @@ const Editor = () => {
     };
 
     const handleClearArea = () => {
-        setContent(defaultContent());
+        setContent(!Boolean(content));
     };
 
-    const appendNewItem = (e, [tagName, attrs]) => {
+    const appendNewItem = (_, [tagName, attrs]) => {
         const newNode = document.createElementNS('http://www.w3.org/2000/svg', tagName);
 
         Object.entries(attrs).forEach(([attr, value]) => {
@@ -252,7 +247,6 @@ const Editor = () => {
         });
 
         document.querySelector('#editable-content').appendChild(newNode);
-        setContent((content) => content);
     };
 
     useEffect(() => {

@@ -19,7 +19,7 @@ const items = [
     ['circle', Circle],
     ['shape', Shape],
     ['text', Text],
-    ['image', Image]
+    // ['image', Image]
 ];
 
 const EditorItems = (props) => {
@@ -78,11 +78,11 @@ const EditorItems = (props) => {
                     newItem = [
                         'polygon',
                         {
-                            strokeWidth: "3",
+                            strokeWidth: '1',
                             stroke: 'black',
                             fill: "transparent",
                             strokeDasharray: "0",
-                            points: "80,0 160,50 80,100 0,50"
+                            points: `${x + 80},${y} ${x + 160},${y + 50} ${x + 80},${y + 100} ${x},${y + 50}`
                         },
                         []
                     ];
@@ -91,8 +91,8 @@ const EditorItems = (props) => {
                     newItem = [
                         'foreignObject',
                         {
-                            x: e.clientX,
-                            y: e.clientY,
+                            x,
+                            y,
                             width: 150,
                             height: 100,
                             stroke: 'black',
@@ -104,25 +104,46 @@ const EditorItems = (props) => {
                                 {
                                     display: 'block'
                                 },
-                                []
+                                ['text']
                             ]
                         ]
                     ];
                     break;
                 case 'text':
                     newItem = [
-                        'foreignObject',
+                        'text',
                         {
-                            x: e.clientX,
-                            y: e.clientY,
-                            width: 150,
-                            height: 100,
-                            stroke: 'black',
-                            fill: 'transparent'
+                            x,
+                            y,
+                            textLength: 150
                         },
-                        []
+                        React.createElement(
+                            'tspan',
+                            {},
+                            'text'
+                        )
                     ];
                     break;
+                // case 'text':
+                //     newItem = [
+                //         'foreignObject',
+                //         {
+                //             x,
+                //             y,
+                //             width: 150,
+                //             height: 100,
+                //             stroke: 'black',
+                //             fill: 'transparent'
+                //         },
+                //         React.createElement(
+                //             'div',
+                //             {
+                //                 display: 'block'
+                //             },
+                //             'text'
+                //         )
+                //     ];
+                //     break;
                 default:
                     break;
 

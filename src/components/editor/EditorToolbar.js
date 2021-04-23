@@ -5,9 +5,8 @@ import { IconButton } from '@material-ui/core';
 
 import {
     Layers as LayersIcon,
-    FormatAlignLeft as AlignLeft,
-    FormatAlignCenter as AlignCenter,
-    FormatAlignRight as AlignRight,
+    VerticalAlignCenter as AlignCenter,
+    VerticalAlignBottom as AlignIcon,
     GridOn as GridOnIcon,
     GridOff as GridOffIcon,
     Undo as UndoIcon,
@@ -16,13 +15,20 @@ import {
     PanTool as PanToolIcon,
     PhotoSizeSelectSmall as PhotoSizeSelectSmallIcon,
     Search as SearchIcon,
-    Crop32Outlined as Rectangle
+    Crop32Outlined as Rectangle,
+    FormatShapes as ShapeSettingsIcon,
+    Tune as CanvasSettingsIcon
 } from '@material-ui/icons';
 
 import { setEditorAction, activateEditorGrid } from '../../actions';
 
 const useStyles = makeStyles(() => ({
     root: {
+        display: 'flex',
+        alignItems: 'center',
+        height: '100%'
+    },
+    flex: {
         display: 'flex',
         alignItems: 'center',
         height: '100%',
@@ -64,7 +70,7 @@ const mapDispatchToProps = (dispatch) => ({
 const EditorToolbar = (props) => {
     const classes = useStyles();
 
-    const { 
+    const {
         editorAction,
         editorGrid,
         eventBus
@@ -88,9 +94,12 @@ const EditorToolbar = (props) => {
         { type: 'divider' },
         // { type: 'button', selected: editorAction === 'zoom', component: <Rectangle />, action: setEditorAction('drawRect') },
         // { type: 'divider' },
-        { type: 'button', selected: editorAction === 'alignLeft', component: <AlignLeft />, action: () => eventBus.emit('alignLeft') },
-        { type: 'button', selected: editorAction === 'alignCenter', component: <AlignCenter />, action: () => eventBus.emit('alignCenter') },
-        { type: 'button', selected: editorAction === 'alignRight', component: <AlignRight />, action: () => eventBus.emit('alignRight') },
+        { type: 'button', selected: editorAction === 'alignLeft', component: <AlignIcon transform='rotate(90)' />, action: () => eventBus.emit('alignLeft') },
+        { type: 'button', selected: editorAction === 'alignHorizontal', component: <AlignCenter transform='rotate(90)' />, action: () => eventBus.emit('alignHorizontal') },
+        { type: 'button', selected: editorAction === 'alignRight', component: <AlignIcon transform='rotate(-90)' />, action: () => eventBus.emit('alignRight') },
+        { type: 'button', selected: editorAction === 'alignTop', component: <AlignIcon transform='rotate(180)' />, action: () => eventBus.emit('alignTop') },
+        { type: 'button', selected: editorAction === 'alignVertical', component: <AlignCenter transform='rotate(180)' />, action: () => eventBus.emit('alignVertical') },
+        { type: 'button', selected: editorAction === 'alignBottom', component: <AlignIcon />, action: () => eventBus.emit('alignBottom') },
         { type: 'divider' },
         { type: 'button', selected: editorGrid === true, component: <GridOnIcon />, action: () => activateEditorGrid(true) },
         { type: 'button', selected: editorGrid === false, component: <GridOffIcon />, action: () => activateEditorGrid(false) },
@@ -99,15 +108,31 @@ const EditorToolbar = (props) => {
         { type: 'button', selected: false, component: <RedoIcon />, action: () => eventBus.emit('redo') }
     ];
 
+    const options = [
+        { type: 'button', selected: false, component: <ShapeSettingsIcon />, action: () => eventBus.emit('settings', null, 'item') },
+        { type: 'button', selected: false, component: <CanvasSettingsIcon />, action: () => eventBus.emit('settings', null, 'canvas') }
+    ];
+
     return (
         <div className={classes.root}>
-            {buttons.map(({ type, component, action, selected, value }, index) => (
-                <div key={`${index}button`} className={classes.toolbar}>{
-                    type !== 'divider'
-                        ? <ExtendedButton disabled={selected} onClick={() => action()}>{component}</ExtendedButton>
-                        : <div className={classes.verticalDivider} />
-                }</div>
-            ))}
+            <div className={classes.flex}>
+                {buttons.map(({ type, component, action, selected, value }, index) => (
+                    <div key={`${index}button`} className={classes.toolbar}>{
+                        type !== 'divider'
+                            ? <ExtendedButton disabled={selected} onClick={() => action()}>{component}</ExtendedButton>
+                            : <div className={classes.verticalDivider} />
+                    }</div>
+                ))}
+            </div>
+            <div className={classes.flex} style={{ width: '100%', justifyContent: 'flex-end' }}>
+                {options.map(({ type, component, action, selected, value }, index) => (
+                    <div key={`${index}button`} className={classes.toolbar}>{
+                        type !== 'divider'
+                            ? <ExtendedButton disabled={selected} onClick={() => action()}>{component}</ExtendedButton>
+                            : <div className={classes.verticalDivider} />
+                    }</div>
+                ))}
+            </div>
         </div>
     );
 };

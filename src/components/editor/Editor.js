@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import parse from 'html-react-parser';
@@ -21,7 +22,7 @@ import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
 import EditorMenu from './EditorMenu';
 import EditorItems from './EditorItems';
-import EditorSettings from './EditorSettings';
+import { CanvasSettings, ItemSettings } from './settings';
 
 const allowedSvgs = [
     'g', 'rect', 'path', 'polygon', 'polyline',
@@ -29,6 +30,10 @@ const allowedSvgs = [
 ];
 
 const drawerWidth = 240;
+
+const mapStateToProps = (state) => ({
+    eventBus: state.eventBus
+});
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -123,12 +128,13 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const Editor = () => {
+const Editor = (props) => {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
     const [leftOffset, setLeftOffset] = useState(57);
     const [content, setContent] = useState(null);
+    const [showSettings, setSettingsTab] = useState('canvas');
 
     const parsedStyleSheet = new CSSStyleSheet();
 
@@ -212,12 +218,11 @@ const Editor = () => {
         }
 
         const element = document.createElement('div');
-        
         // this is a temporary decision to convert html to dom
         // maybe in the future it is need to use react way to import complex html tree
         ReactDOM.render(reactSVGEl, element, () => {
-            setContent(element.childNodes[0]);
             ReactDOM.unmountComponentAtNode(element);
+            setContent(element.childNodes[0]);
         });
     };
 
@@ -239,19 +244,26 @@ const Editor = () => {
         setContent(!Boolean(content));
     };
 
-    const appendNewItem = (_, [tagName, attrs]) => {
-        const newNode = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    const appendNewItem = (_, nodeProps) => {
+        const element = document.createElement('div');
 
-        Object.entries(attrs).forEach(([attr, value]) => {
-            newNode.setAttribute(attr, value);
-        });
-
-        document.querySelector('#editable-content').appendChild(newNode);
+        ReactDOM.render(
+            <svg>{React.createElement(...nodeProps)}</svg>,
+            element,
+            () => {
+                ReactDOM.unmountComponentAtNode(element);
+                document.querySelector('#editable-content').appendChild(element.childNodes[0].childNodes[0]);
+            }
+        );
     };
 
     useEffect(() => {
         setLeftOffset(open ? drawerWidth : 57);
     }, [open]);
+
+    useState(() => {
+        props.eventBus.on('settings', (value) => setSettingsTab(value));
+    }, []);
 
     return (
         // <div style={{ paddingTop: '60px' }}></div>
@@ -322,7 +334,10 @@ const Editor = () => {
                         >
                             {content}
                         </EditorCanvas>
-                        <EditorSettings width={drawerWidth} />
+                        {showSettings === 'canvas'
+                            ? <CanvasSettings width={drawerWidth}/>
+                            : <ItemSettings width={drawerWidth} />
+                        }
                     </div>
                 </div>
             </div>
@@ -330,4 +345,4 @@ const Editor = () => {
     );
 };
 
-export default Editor;
+export default connect(mapStateToProps)(Editor);

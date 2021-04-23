@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import subjx from 'subjx';
-import makeSelectable from '../helpers/selectable';
+import DragSelect from 'dragselect';
 
 const subjxConfiguration = {
     container: '#editor-container',
@@ -42,6 +42,7 @@ class EditorContainer extends React.Component {
                         this.el.appendChild(nextProps.content.firstChild);
                     }
                 } else {
+                    this.handleDropLayer();
                     while (this.el.lastElementChild) {
                         this.el.removeChild(this.el.lastElementChild);
                     }
@@ -65,16 +66,12 @@ class EditorContainer extends React.Component {
                 this.selectable = this.makeSelectables();
             }
             if (!nextProps.selectable && this.selectable) {
-                this.selectable();
+                this.selectable.stop();
                 this.selectable = null;
             }
         }
 
         return false;
-        // (nextProps.content !== this.props.content) ||
-        //     nextProps.dropLayer ||
-        //     nextProps.dropItems ||
-        //     !nextProps.editable;
     }
 
     componentDidMount() {
@@ -94,12 +91,6 @@ class EditorContainer extends React.Component {
         this.el.classList.add('isolated-layer');
 
         this.subscribeToEvents();
-
-        const tooltip = document.createElement('div');
-        tooltip.style.position = 'absolute';
-        tooltip.classList.add('drag-tooltip');
-        document.body.appendChild(tooltip);
-        this.tooltip = tooltip;
     }
 
     componentWillUnmount() {
@@ -114,9 +105,23 @@ class EditorContainer extends React.Component {
         eventBus.on('redo', this.handleRedo);
         eventBus.on('settingUpdated', this.reloadDraggables);
 
-        eventBus.on('alignLeft', () => this.applyAlignment('l'));
-        eventBus.on('alignRight', () => this.applyAlignment('r'));
-        eventBus.on('alignCenter', () => this.applyAlignment('h'));
+        Object.entries({
+            fill: 'fill',
+            stroke: 'stroke',
+            thickness: 'stroke-width',
+            opacity: 'opacity'
+        }).map(([event, attribute]) => eventBus.on(event, (val) => {
+            this.items.forEach(item => item.el.setAttributeNS(null, attribute, val));
+        }));
+
+        Object.entries({
+            l: 'alignLeft',
+            r: 'alignRight',
+            h: 'alignHorizontal',
+            t: 'alignTop',
+            b: 'alignBottom',
+            v: 'alignVertical'
+        }).map(([key, event]) => eventBus.on(event, () => this.applyAlignment(key)));
     }
 
     setEditable(value) {
@@ -140,21 +145,6 @@ class EditorContainer extends React.Component {
             snapSteps
         } = props;
 
-        const calcTooltipPosition = (startPoint, lineLength, offset, angle) => {
-            const [x, y] = startPoint;
-            const [lengthX, lengthY] = lineLength;
-
-            const theta = Math.atan2(
-                lengthY,
-                lengthX
-            ) - (angle * Math.PI / 180);
-
-            return [
-                Number(x) + offset * Math.cos(theta),
-                Number(y) + offset * Math.sin(theta)
-            ];
-        };
-
         return subjx(target).drag({
             ...subjxConfiguration,
             ...(allowRestrictions && { restrict: '#editor-grid' }),
@@ -170,6 +160,14 @@ class EditorContainer extends React.Component {
             onInit() {
                 // eslint-disable-next-line no-console
                 console.log('Draggable:: ', this.el);
+
+                this.options.scalable = this.el.tagName.toLowerCase() === 'text';
+
+                // disables selection if active
+                if (self.selectable && self.props.selectable) {
+                    self.selectable.stop();
+                }
+
                 const { tr, tl } = this.storage.handles;
 
                 const lx1 = tl.cx.baseVal.value;
@@ -179,7 +177,7 @@ class EditorContainer extends React.Component {
 
                 const lineLength = [lx1 - lx2, ly1 - ly2];
 
-                const [nextX, nextY] = calcTooltipPosition(
+                const [nextX, nextY] = self.calcTooltipPosition(
                     [lx2, ly2],
                     lineLength,
                     -30,
@@ -216,7 +214,7 @@ class EditorContainer extends React.Component {
 
                 const lineLength = [lx1 - lx2, ly1 - ly2];
 
-                const [nextX, nextY] = calcTooltipPosition(
+                const [nextX, nextY] = self.calcTooltipPosition(
                     [lx2, ly2],
                     lineLength,
                     -30,
@@ -252,15 +250,12 @@ class EditorContainer extends React.Component {
                 self.setEditable(true);
 
                 if (self.ignoreStoring) return self.ignoreStoring = false;
-                undoStack.setItem({
-                    name: 'rotate', data: delta, el: this.el
-                });
+                undoStack.setItem({ name: 'rotate', data: delta, el: this.el });
             },
             onDrop() {
                 setTimeout(() => (
                     self.setEditable(false)
                 ), 100);
-                self.tooltip.style.display = 'none';
 
                 if (self.ignoreStoring) return self.ignoreStoring = false;
                 undoStack.next();
@@ -270,6 +265,10 @@ class EditorContainer extends React.Component {
                     self.setEditable(false)
                 ), 100);
                 this.el.classList.remove('subjx-selected');
+                // enables selection if active
+                if (self.selectable && self.props.selectable) {
+                    self.selectable.start();
+                }
             }
         });
     }
@@ -285,37 +284,62 @@ class EditorContainer extends React.Component {
     }
 
     applyAlignment(direction) {
-        this.items.map((item) => item.applyAlignment(direction));
+        this.items.map((item) => {
+            item.applyAlignment(direction);
+            const { tr, tl } = item.storage.handles;
+
+            const lx1 = tl.cx.baseVal.value;
+            const ly1 = tl.cy.baseVal.value;
+            const lx2 = tr.cx.baseVal.value;
+            const ly2 = tr.cy.baseVal.value;
+
+            const lineLength = [lx1 - lx2, ly1 - ly2];
+
+            const [nextX, nextY] = this.calcTooltipPosition(
+                [lx2, ly2],
+                lineLength,
+                -30,
+                45
+            );
+
+            const tooltip = item.controls.querySelector('.delete-sjx-item');
+            tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+        });
+    }
+
+    calcTooltipPosition(startPoint, lineLength, offset, angle) {
+        const [x, y] = startPoint;
+        const [lengthX, lengthY] = lineLength;
+
+        const theta = Math.atan2(
+            lengthY,
+            lengthX
+        ) - (angle * Math.PI / 180);
+
+        return [
+            Number(x) + offset * Math.cos(theta),
+            Number(y) + offset * Math.sin(theta)
+        ];
     }
 
     makeSelectables() {
-        const selectableConfig = {
-            onSelectionStart(selectionStart) {
-                // [...selectionStart.svg.querySelectorAll('[data-selected]')].forEach((element) => (
-                //     element.removeAttribute('data-selected')
-                // ));
-            },
-            onSelectionEnd(selectionEnd) {
-                // [...selectionEnd.svg.querySelectorAll('[data-selected]')].forEach((element) => (
-                //     element.removeAttribute('data-selected')
-                // ));
-            },
-            onSelectionChange(selectionChange) {
-                // selectionChange.newlyDeselectedElements.forEach((element) => {
-                //     element.removeAttribute('data-selected');
-                // });
+        const ds = new DragSelect({
+            selectables: this.currentGroup.children,
+            area: this.props.root.current
+        });
 
-                // selectionChange.newlySelectedElements.forEach((element) => {
-                //     element.setAttribute('data-selected', '');
-                // });
-            }
-        };
+        ds.subscribe('callback', ({ items: selected }) => {
+            const { items } = this;
 
-        return makeSelectable(
-            this.props.root.current,
-            this.el.parentNode,
-            selectableConfig
-        );
+            while (items.length > 0) items.pop().disable();
+            if (!selected.length) return;
+
+            const newItems = this.setDraggable(selected);
+
+            this.items = [...newItems];
+        });
+
+        return ds;
     }
 
     handleClick(e) {
@@ -350,7 +374,9 @@ class EditorContainer extends React.Component {
     }
 
     handleDoubleClick(e) {
+        e.preventDefault();
         if (this.editable || !this.props.editable) return;
+
         const { currentGroup } = this;
 
         const target = [...currentGroup.childNodes]
@@ -373,7 +399,11 @@ class EditorContainer extends React.Component {
 
     handleDropLayer() {
         const { currentGroup } = this;
-        if (currentGroup === this.el) return;
+        if (currentGroup === this.el) {
+            return this.props.onLayerChange(
+                this.getLayerPath(currentGroup)
+            );
+        }
 
         this.dropItems();
         currentGroup.classList.remove('isolated-layer');

@@ -105,16 +105,6 @@ const EditorCanvas = (props) => {
         y: (paperHeight - initialH) / 2
     });
 
-    // const {
-    //     props: {
-    //         x: contentLeft,
-    //         y: contentTop,
-    //         width: contentWidth = paperSize.w,
-    //         height: contentHeight = paperSize.h,
-    //         viewBox: contentViewBox
-    //     } = {}
-    // } = content || {};
-
     let canvasEl = null;
     let controlsRef = null;
     const workAreaRef = useRef(null);

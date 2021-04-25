@@ -63,9 +63,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 const mapStateToProps = (state) => ({
-    eventBus: state.eventBus
+    eventBus: state.eventBus,
+    selectedItems: state.items
 });
-
 
 const ItemSettings = (props) => {
     const classes = useStyles();
@@ -79,24 +79,37 @@ const ItemSettings = (props) => {
     const [thickness, setThickness] = useState(2);
     const [opacity, setOpacity] = useState(100);
 
-    const setValue = (name, value) => {
+    const setValue = (name, value, isEmit = true) => {
         switch (name) {
 
-            case 'fill':
+            case 'fill': {
                 setFill(value);
-                eventBus.emit(name, null, value);
+                if (isEmit) eventBus.emit(name, null, value);
                 break;
-            case 'stroke':
+            }
+            case 'fillOptions': {
+                const nextVal = fillOptions === 'color' ? fill : 'none';
+                setFill(nextVal);
+                if (isEmit) eventBus.emit(name, null, nextVal);
+                break;
+            }
+            case 'stroke': {
                 setStroke(value);
-                eventBus.emit(name, null, value.hex);
+                if (isEmit) eventBus.emit(name, null, value);
                 break;
-            case 'thickness':
-                setThickness(value);
-                eventBus.emit(name, null, value);
+            }
+            case 'thickness': {
+                const nextVal = value === null ? 2 : value;
+                setThickness(Number(nextVal));
+                if (isEmit) eventBus.emit(name, null, Number(nextVal));
                 break;
-            case 'opacity':
-                setOpacity(value);
-                eventBus.emit(name, null, value / 100);
+            }
+            case 'opacity': {
+                const nextVal = value === null ? 1 : value;
+                setOpacity(Number(nextVal) * 100);
+                if (isEmit) eventBus.emit(name, null, Number(nextVal));
+                break;
+            }
             default:
                 break;
 
@@ -104,8 +117,21 @@ const ItemSettings = (props) => {
     };
 
     useEffect(() => {
-        setValue('fill', fillOptions === 'color' ? fill : 'none');
-    }, [fillOptions]);
+        if (!props.selectedItems.length) return;
+
+        Object.entries({
+            fill: 'fill',
+            stroke: 'stroke',
+            thickness: 'stroke-width',
+            opacity: 'opacity'
+        }).map(([event, attribute]) => {
+            setValue(
+                event,
+                props.selectedItems[0].el.getAttributeNS(null, attribute),
+                false
+            );
+        });
+    }, [props.selectedItems]);
 
     return (
         <div
@@ -116,10 +142,12 @@ const ItemSettings = (props) => {
                 <FormGroup aria-label='position'>
                     <div className={classes.padding}>
                         <div className={classes.container}>
-                            <Typography className={classes.label} variant='subtitle1' align='left'>Fill</Typography>
+                            <Typography className={classes.label} variant='subtitle1' align='left'>
+                                Fill
+                            </Typography>
                         </div>
                         <div className={classes.container}>
-                            <ColorPicker initValue={fill} onChange={(value) => setValue('fill', value.hex)} />
+                            <ColorPicker value={fill} onChange={(value) => setValue('fill', value.hex)} />
                             <Select
                                 style={{ width: '50%', padding: 10 }}
                                 variant='outlined'
@@ -137,7 +165,7 @@ const ItemSettings = (props) => {
                             <Typography className={classes.label} variant='subtitle1' align='left'>Stroke</Typography>
                         </div>
                         <div className={classes.container}>
-                            <ColorPicker initValue={stroke} onChange={(value) => setValue('stroke', value)} />
+                            <ColorPicker value={stroke} onChange={(value) => setValue('stroke', value.hex)} />
                             <Select
                                 style={{ width: '50%', padding: 10 }}
                                 variant='outlined'
@@ -155,7 +183,12 @@ const ItemSettings = (props) => {
                             <Grid item xs={12}>
                                 <Typography className={classes.label} variant='subtitle1' align='left'>Thickness</Typography>
                                 <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px' }}>
-                                    <Slider valueLabelDisplay='auto' max={30} value={thickness} onChange={(e, val) => setValue('thickness', val)} step={1} />
+                                    <Slider
+                                        valueLabelDisplay='auto'
+                                        max={30}
+                                        value={thickness}
+                                        onChange={(e, val) => setValue('thickness', val)} step={1}
+                                    />
                                 </div>
                             </Grid>
                         </div>
@@ -166,7 +199,12 @@ const ItemSettings = (props) => {
                             <Grid item xs={12}>
                                 <Typography className={classes.label} variant='subtitle1' align='left'>Opacity</Typography>
                                 <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px' }}>
-                                    <Slider valueLabelDisplay='auto' max={100} value={opacity} onChange={(e, val) => setValue('opacity', val)} step={1} />
+                                    <Slider
+                                        valueLabelDisplay='auto'
+                                        max={100}
+                                        value={opacity}
+                                        onChange={(e, val) => setValue('opacity', val / 100)} step={1}
+                                    />
                                 </div>
                             </Grid>
                         </div>

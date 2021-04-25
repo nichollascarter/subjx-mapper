@@ -335,7 +335,7 @@ const Editor = (props) => {
                             {content}
                         </EditorCanvas>
                         {showSettings === 'canvas'
-                            ? <CanvasSettings width={drawerWidth}/>
+                            ? <CanvasSettings width={drawerWidth} />
                             : <ItemSettings width={drawerWidth} />
                         }
                     </div>

@@ -20,7 +20,8 @@ const initialState = {
         angle: 15
     },
     eventBus: new EventBus(),
-    undoStack: new UndoStack()
+    undoStack: new UndoStack(),
+    items: []
 };
 
 function rootReducer(state = { ...initialState }, action) {
@@ -75,6 +76,11 @@ function rootReducer(state = { ...initialState }, action) {
             return {
                 ...state,
                 snapSteps: action.snapSteps
+            };
+        case 'SET_SELECTED_ITEMS':
+            return {
+                ...state,
+                items: action.items
             };
         default:
             return state;

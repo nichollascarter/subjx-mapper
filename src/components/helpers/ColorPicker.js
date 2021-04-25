@@ -41,14 +41,12 @@ const styles = () => ({
     }
 });
 
-
 class ColorPicker extends React.Component {
 
     state = {
-
         displayColorPicker: false,
         currentColor: {
-            hex: this.props.initValue || 'transparent'
+            hex: this.props.initValue || this.props.value || 'transparent'
         },
         popover: {
             position: 'absolute',
@@ -58,10 +56,16 @@ class ColorPicker extends React.Component {
         }
     };
 
+    componentDidUpdate() {
+        if (this.props.value !== this.state.currentColor.hex) {
+            this.setState({ currentColor: { hex: this.props.value } });
+        }
+    }
+
     handleClick = (e) => {
         const { clientX, clientY } = e;
         const { clientWidth, clientHeight } = e.target;
-        this.setState({ 
+        this.setState({
             displayColorPicker: !this.state.displayColorPicker,
             popover: {
                 ...this.state.popover,

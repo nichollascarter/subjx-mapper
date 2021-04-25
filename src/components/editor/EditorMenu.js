@@ -45,6 +45,7 @@ const EditorMenu = (props) => {
                 const res = await readText(e.target);
                 props.onImport(res);
             } catch (err) {
+                // eslint-disable-next-line no-console
                 console.log(err);
             }
         };

@@ -2,6 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import subjx from 'subjx';
 import DragSelect from 'dragselect';
+import { setSelectedItems } from '../../actions';
+
+const mapDispatchToProps = (dispatch) => ({
+    $setSelectedItems: (act) => dispatch(setSelectedItems(act))
+});
 
 const subjxConfiguration = {
     container: '#editor-container',
@@ -145,7 +150,7 @@ class EditorContainer extends React.Component {
             snapSteps
         } = props;
 
-        return subjx(target).drag({
+        const nextItems = subjx(target).drag({
             ...subjxConfiguration,
             ...(allowRestrictions && { restrict: '#editor-grid' }),
             draggable: allowDragging,
@@ -168,12 +173,12 @@ class EditorContainer extends React.Component {
                     self.selectable.stop();
                 }
 
-                const { tr, tl } = this.storage.handles;
+                const { te } = this.storage.handles;
 
-                const lx1 = tl.cx.baseVal.value;
-                const ly1 = tl.cy.baseVal.value;
-                const lx2 = tr.cx.baseVal.value;
-                const ly2 = tr.cy.baseVal.value;
+                const lx1 = te.x1.baseVal.value;
+                const ly1 = te.y1.baseVal.value;
+                const lx2 = te.x2.baseVal.value;
+                const ly2 = te.y2.baseVal.value;
 
                 const lineLength = [lx1 - lx2, ly1 - ly2];
 
@@ -271,6 +276,10 @@ class EditorContainer extends React.Component {
                 }
             }
         });
+
+        this.props.eventBus.emit('settings', null, 'item');
+        this.props.$setSelectedItems({ items: [...nextItems] });
+        return nextItems;
     }
 
     reloadDraggables() {
@@ -286,12 +295,12 @@ class EditorContainer extends React.Component {
     applyAlignment(direction) {
         this.items.map((item) => {
             item.applyAlignment(direction);
-            const { tr, tl } = item.storage.handles;
+            const { te } = item.storage.handles;
 
-            const lx1 = tl.cx.baseVal.value;
-            const ly1 = tl.cy.baseVal.value;
-            const lx2 = tr.cx.baseVal.value;
-            const ly2 = tr.cy.baseVal.value;
+            const lx1 = te.x1.baseVal.value;
+            const ly1 = te.y1.baseVal.value;
+            const lx2 = te.x2.baseVal.value;
+            const ly2 = te.y2.baseVal.value;
 
             const lineLength = [lx1 - lx2, ly1 - ly2];
 
@@ -555,4 +564,4 @@ class EditorContainer extends React.Component {
 
 }
 
-export default connect(mapStateToProps)(EditorContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(EditorContainer);

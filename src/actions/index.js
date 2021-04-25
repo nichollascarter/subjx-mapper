@@ -37,3 +37,7 @@ export function setAllowRestrictions({ allowRestrictions }) {
 export function setSnapSteps({ snapSteps }) {
     return { type: 'SET_SNAP_STEPS', snapSteps };
 }
+
+export function setSelectedItems({ items }) {
+    return { type: 'SET_SELECTED_ITEMS', items };
+}

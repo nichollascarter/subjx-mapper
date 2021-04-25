@@ -74,7 +74,8 @@ const mapStateToProps = (state) => {
         editorAction: state.editorAction,
         editorGrid: state.editorGrid,
         editorGridSize: state.editorGridSize,
-        editorPaperSize: state.editorPaperSize
+        editorPaperSize: state.editorPaperSize,
+        eventBus: state.eventBus
     };
 };
 
@@ -156,6 +157,7 @@ const EditorCanvas = (props) => {
 
                 if (!canvasEl.children[0].contains(e.target)) {
                     setDropItems(true);
+                    props.eventBus.emit('settings', null, 'canvas');
                     return setTimeout(() => setDropItems(false), 100);
                 }
                 break;

@@ -88,14 +88,20 @@ const ItemSettings = (props) => {
                 break;
             }
             case 'fillOptions': {
-                const nextVal = fillOptions === 'color' ? fill : 'none';
-                setFill(nextVal);
-                if (isEmit) eventBus.emit(name, null, nextVal);
+                const nextVal = value === 'color' ? fill : 'none';
+                setFillOptions(value);
+                if (isEmit) eventBus.emit('fill', null, nextVal);
                 break;
             }
             case 'stroke': {
                 setStroke(value);
                 if (isEmit) eventBus.emit(name, null, value);
+                break;
+            }
+            case 'strokeOptions': {
+                const nextVal = value === 'color' ? stroke : 'none';
+                setStrokeOptions(value);
+                if (isEmit) eventBus.emit('stroke', null, nextVal);
                 break;
             }
             case 'thickness': {
@@ -138,7 +144,7 @@ const ItemSettings = (props) => {
             className={classes.root}
             style={{ width: props.width }}
         >
-            <FormControl component='fieldset' style={{ width: '100%' }}>
+            <form style={{ width: '100%' }}>
                 <FormGroup aria-label='position'>
                     <div className={classes.padding}>
                         <div className={classes.container}>
@@ -153,9 +159,9 @@ const ItemSettings = (props) => {
                                 variant='outlined'
                                 native
                                 value={fillOptions}
-                                onChange={(e) => setFillOptions(e.target.value)}
+                                onChange={(e) => setValue('fillOptions', e.target.value)}
                                 name='age'
-                                input={<BootstrapInput />}
+                                input={<BootstrapInput value={fillOptions} />}
                             >
                                 <option value={'none'}>none</option>
                                 <option value={'color'}>color</option>
@@ -171,9 +177,9 @@ const ItemSettings = (props) => {
                                 variant='outlined'
                                 native
                                 value={strokeOptions}
-                                onChange={(e) => setStrokeOptions(e.target.value)}
+                                onChange={(e) => setValue('strokeOptions', e.target.value)}
                                 name='age'
-                                input={<BootstrapInput />}
+                                input={<BootstrapInput value={strokeOptions} />}
                             >
                                 <option value={'none'}>none</option>
                                 <option value={'color'}>color</option>
@@ -211,7 +217,7 @@ const ItemSettings = (props) => {
                     </div>
                     <Divider />
                 </FormGroup>
-            </FormControl>
+            </form>
         </div>
     );
 };

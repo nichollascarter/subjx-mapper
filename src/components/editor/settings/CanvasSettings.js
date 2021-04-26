@@ -168,7 +168,7 @@ const CanvasSettings = (props) => {
             className={classes.root}
             style={{ width: props.width }}
         >
-            <FormControl component='fieldset'>
+            <form>
                 <FormGroup aria-label='position'>
                     <div className={classes.padding}>
                         <Typography className={classes.label} variant='subtitle1' align='left'>Canvas</Typography>
@@ -239,7 +239,7 @@ const CanvasSettings = (props) => {
                         </Grid>
                     </div>
                 </FormGroup>
-            </FormControl>
+            </form>
         </div>
     );
 };

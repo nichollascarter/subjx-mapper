@@ -70,7 +70,7 @@ const mapStateToProps = (state) => ({
 const ItemSettings = (props) => {
     const classes = useStyles();
 
-    const { eventBus } = props;
+    const { eventBus, selectedItems } = props;
 
     const [fill, setFill] = useState('none');
     const [fillOptions, setFillOptions] = useState('none');
@@ -117,7 +117,7 @@ const ItemSettings = (props) => {
     };
 
     useEffect(() => {
-        if (!props.selectedItems.length) return;
+        if (!selectedItems.length) return;
 
         Object.entries({
             fill: 'fill',
@@ -127,11 +127,11 @@ const ItemSettings = (props) => {
         }).map(([event, attribute]) => {
             setValue(
                 event,
-                props.selectedItems[0].el.getAttributeNS(null, attribute),
+                selectedItems[0].el.getAttributeNS(null, attribute),
                 false
             );
         });
-    }, [props.selectedItems]);
+    }, [selectedItems]);
 
     return (
         <div

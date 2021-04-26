@@ -9,7 +9,7 @@ import Main from './components/Main';
 const outerTheme = createMuiTheme({
     palette: {
         primary: {
-            main: '#0c9696',
+            main: '#00a8ff', // '#0c9696',
             auxiliary: '#0a7e95',
             contrastText: '#fff'
         },

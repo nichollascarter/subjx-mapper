@@ -79,6 +79,13 @@ const ItemSettings = (props) => {
     const [thickness, setThickness] = useState(2);
     const [opacity, setOpacity] = useState(100);
 
+    const [textContent, setTextContent] = useState(null);
+    const [textProperties, setTextProperties] = useState({
+        letterSpacing: 5,
+        wordSpacing: 1,
+        lineHeight: 1
+    });
+
     const setValue = (name, value, isEmit = true) => {
         switch (name) {
 
@@ -116,11 +123,25 @@ const ItemSettings = (props) => {
                 if (isEmit) eventBus.emit(name, null, Number(nextVal));
                 break;
             }
+            case 'textContent': {
+                changeTextContent(value);
+                if (isEmit) eventBus.emit(name);
+                break;
+            }
+            case 'letterSpacing':
+            case 'wordSpacing':
+            case 'lineHeight': {
+                setTextProperties((prev) => ({ ...prev, [name]: value }));
+                if (isEmit) eventBus.emit(name, null, value);
+                break;
+            }
             default:
                 break;
 
         }
     };
+
+    const isTextTag = (tag) => tag.tagName.toLowerCase() === 'text';
 
     useEffect(() => {
         if (!selectedItems.length) return;
@@ -137,7 +158,18 @@ const ItemSettings = (props) => {
                 false
             );
         });
+
+        if (isTextTag(selectedItems[0].el)) {
+            setTextContent(selectedItems[0].el.textContent || '');
+        } else {
+            setTextContent(null);
+        };
     }, [selectedItems]);
+
+    const changeTextContent = (textContent) => {
+        setTextContent(textContent);
+        selectedItems[0].el.textContent = textContent;
+    };
 
     return (
         <div
@@ -216,6 +248,57 @@ const ItemSettings = (props) => {
                         </div>
                     </div>
                     <Divider />
+                    {(textContent !== null) && <div className={classes.padding}>
+                        <div className={classes.container}>
+                            <Grid item xs={12}>
+                                <Typography className={classes.label} variant='subtitle1' align='left'>Text</Typography>
+                                <BootstrapInput
+                                    style={{ padding: 10 }}
+                                    value={textContent}
+                                    onChange={(e) => setValue('textContent', e.target.value)}
+                                />
+                            </Grid>
+                        </div>
+                        <div className={classes.container}>
+                            <Grid item xs={12}>
+                                <Typography className={classes.label} variant='subtitle1' align='left'>Letter space</Typography>
+                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px' }}>
+                                    <Slider
+                                        valueLabelDisplay='auto'
+                                        max={50}
+                                        value={textProperties.letterSpacing}
+                                        onChange={(e, val) => setValue('letterSpacing', val)} step={1}
+                                    />
+                                </div>
+                            </Grid>
+                        </div>
+                        <div className={classes.container}>
+                            <Grid item xs={12}>
+                                <Typography className={classes.label} variant='subtitle1' align='left'>Word space</Typography>
+                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px' }}>
+                                    <Slider
+                                        valueLabelDisplay='auto'
+                                        max={100}
+                                        value={textProperties.wordSpacing}
+                                        onChange={(e, val) => setValue('wordSpacing', val)} step={1}
+                                    />
+                                </div>
+                            </Grid>
+                        </div>
+                        <div className={classes.container}>
+                            <Grid item xs={12}>
+                                <Typography className={classes.label} variant='subtitle1' align='left'>Line height</Typography>
+                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px' }}>
+                                    <Slider
+                                        valueLabelDisplay='auto'
+                                        max={200}
+                                        value={textProperties.lineHeight}
+                                        onChange={(e, val) => setValue('lineHeight', val)} step={1}
+                                    />
+                                </div>
+                            </Grid>
+                        </div>
+                    </div>}
                 </FormGroup>
             </form>
         </div>

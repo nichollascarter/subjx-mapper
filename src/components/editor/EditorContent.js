@@ -4,9 +4,12 @@ import subjx from 'subjx';
 import DragSelect from 'dragselect';
 import { setSelectedItems } from '../../actions';
 
-const mapDispatchToProps = (dispatch) => ({
-    $setSelectedItems: (act) => dispatch(setSelectedItems(act))
-});
+const textItemEvents = [
+    'letterSpacing',
+    'wordSpacing',
+    'lineHeight',
+    'textContent'
+];
 
 const subjxConfiguration = {
     container: '#editor-container',
@@ -14,6 +17,10 @@ const subjxConfiguration = {
     rotatorAnchor: 'n',
     rotatorOffset: 30
 };
+
+const mapDispatchToProps = (dispatch) => ({
+    $setSelectedItems: (act) => dispatch(setSelectedItems(act))
+});
 
 const mapStateToProps = (state) => ({
     editorGridSize: state.editorGridSize,
@@ -114,9 +121,36 @@ class EditorContainer extends React.Component {
             fill: 'fill',
             stroke: 'stroke',
             thickness: 'stroke-width',
-            opacity: 'opacity'
+            opacity: 'opacity',
+            letterSpacing: 'letter-spacing',
+            wordSpacing: 'word-spacing',
+            lineHeight: 'line-height',
+            textContent: 'text-content'
         }).map(([event, attribute]) => eventBus.on(event, (val) => {
-            this.items.forEach(item => item.el.setAttributeNS(null, attribute, val));
+            this.items.forEach(item => {
+                if (val !== undefined) item.el.setAttributeNS(null, attribute, val);
+                if (textItemEvents.includes(event)) {
+                    item.fitControlsToSize();
+                    const { te } = item.storage.handles;
+
+                    const lx1 = te.x1.baseVal.value;
+                    const ly1 = te.y1.baseVal.value;
+                    const lx2 = te.x2.baseVal.value;
+                    const ly2 = te.y2.baseVal.value;
+
+                    const lineLength = [lx1 - lx2, ly1 - ly2];
+
+                    const [nextX, nextY] = this.calcTooltipPosition(
+                        [lx2, ly2],
+                        lineLength,
+                        -30,
+                        45
+                    );
+
+                    const tooltip = item.controls.querySelector('.delete-sjx-item');
+                    tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+                }
+            });
         }));
 
         Object.entries({
@@ -199,9 +233,7 @@ class EditorContainer extends React.Component {
                 actionButton.setAttributeNS(null, 'fill', 'rgb(237, 28, 36)');
 
                 tooltip.addEventListener('click', () => {
-                    items.splice(items.indexOf(this), 1);
-                    this.disable();
-                    this.el.parentNode.removeChild(this.el);
+                    self.removeDraggable(this);
                 });
                 tooltip.appendChild(actionButton);
 
@@ -251,7 +283,7 @@ class EditorContainer extends React.Component {
                 if (self.ignoreStoring) return self.ignoreStoring = false;
                 undoStack.setItem({ name: 'move', el: this.el, data: [dx, dy] });
             },
-            onRotate({ clientX, clientY, transform, delta }) {
+            onRotate({ delta }) {
                 self.setEditable(true);
 
                 if (self.ignoreStoring) return self.ignoreStoring = false;
@@ -290,6 +322,15 @@ class EditorContainer extends React.Component {
         });
 
         this.items = [...this.setDraggable(newItems)];
+    }
+
+    removeDraggable(draggable) {
+        const { items } = this;
+
+        items.splice(items.indexOf(draggable), 1);
+        draggable.disable();
+        draggable.el.parentNode.removeChild(draggable.el);
+        this.props.eventBus.emit('settings', null, 'canvas');
     }
 
     applyAlignment(direction) {

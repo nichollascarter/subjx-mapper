@@ -10,15 +10,15 @@ import {
     Crop32Outlined as Rectangle,
     RadioButtonUnchecked as Circle,
     GradeOutlined as Shape,
-    CropOriginalOutlined as Image,
-    FormatShapes as Text
+    //CropOriginalOutlined as Image,
+    TextFormat as Text
 } from '@material-ui/icons';
 
 const items = [
     ['rectangle', Rectangle],
     ['circle', Circle],
     ['shape', Shape],
-    ['text', Text],
+    ['text', Text]
     // ['image', Image]
 ];
 
@@ -114,36 +114,11 @@ const EditorItems = (props) => {
                         'text',
                         {
                             x,
-                            y,
-                            textLength: 150
+                            y
                         },
-                        React.createElement(
-                            'tspan',
-                            {},
-                            'text'
-                        )
+                        'text'
                     ];
                     break;
-                // case 'text':
-                //     newItem = [
-                //         'foreignObject',
-                //         {
-                //             x,
-                //             y,
-                //             width: 150,
-                //             height: 100,
-                //             stroke: 'black',
-                //             fill: 'transparent'
-                //         },
-                //         React.createElement(
-                //             'div',
-                //             {
-                //                 display: 'block'
-                //             },
-                //             'text'
-                //         )
-                //     ];
-                //     break;
                 default:
                     break;
 

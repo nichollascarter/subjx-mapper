@@ -7,7 +7,6 @@ import {
     Checkbox,
     FormGroup,
     FormControlLabel,
-    FormControl,
     Divider,
     Typography,
     Grid,
@@ -109,7 +108,6 @@ const CanvasSettings = (props) => {
     const [proportions, setProportions] = useState(allowProportions);
     const [restrictions, setRestrictions] = useState(allowRestrictions);
     const [snap, setSnap] = useState(snapSteps);
-
 
     const handleChange = ([w, h]) => {
         if (Number(w) < 1 || Number(h) < 1) return;

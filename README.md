@@ -1,5 +1,5 @@
 ## Subjx mapper
-Svg [editor](https://nichollascarter.github.io/subjx-mapper/) based on [subjx](https://github.com/nichollascarter/subjx) library
+SVG [editor](https://nichollascarter.github.io/subjx-mapper/) based on [subjx](https://github.com/nichollascarter/subjx) library
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/nichollascarter/subjx-mapper/master/public/demo.png">
@@ -25,7 +25,7 @@ Svg [editor](https://nichollascarter.github.io/subjx-mapper/) based on [subjx](h
 * Redux
 * Material UI
 
-The project under development.
+The project is under development.
 
 # License
 

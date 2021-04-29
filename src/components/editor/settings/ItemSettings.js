@@ -114,13 +114,13 @@ const ItemSettings = (props) => {
             case 'thickness': {
                 const nextVal = value === null ? 2 : value;
                 setThickness(Number(nextVal));
-                if (isEmit) eventBus.emit(name, null, Number(nextVal));
+                if (isEmit) eventBus.emit(name, null, nextVal);
                 break;
             }
             case 'opacity': {
                 const nextVal = value === null ? 1 : value;
                 setOpacity(Number(nextVal) * 100);
-                if (isEmit) eventBus.emit(name, null, Number(nextVal));
+                if (isEmit) eventBus.emit(name, null, nextVal);
                 break;
             }
             case 'textContent': {
@@ -131,7 +131,7 @@ const ItemSettings = (props) => {
             case 'letterSpacing':
             case 'wordSpacing':
             case 'lineHeight': {
-                setTextProperties((prev) => ({ ...prev, [name]: value }));
+                setTextProperties((prev) => ({ ...prev, [name]: value === null ? prev[name] : Number(value) }));
                 if (isEmit) eventBus.emit(name, null, value);
                 break;
             }
@@ -146,11 +146,18 @@ const ItemSettings = (props) => {
     useEffect(() => {
         if (!selectedItems.length) return;
 
+        const textTag = isTextTag(selectedItems[0].el);
+
         Object.entries({
             fill: 'fill',
             stroke: 'stroke',
             thickness: 'stroke-width',
-            opacity: 'opacity'
+            opacity: 'opacity',
+            ...(textTag && {
+                letterSpacing: 'letter-spacing',
+                wordSpacing: 'word-spacing',
+                lineHeight: 'line-height'
+            })
         }).map(([event, attribute]) => {
             setValue(
                 event,
@@ -159,7 +166,7 @@ const ItemSettings = (props) => {
             );
         });
 
-        if (isTextTag(selectedItems[0].el)) {
+        if (textTag) {
             setTextContent(selectedItems[0].el.textContent || '');
         } else {
             setTextContent(null);

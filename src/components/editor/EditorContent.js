@@ -29,6 +29,7 @@ const mapStateToProps = (state) => ({
     allowRotating: state.allowRotating,
     allowProportions: state.allowProportions,
     allowRestrictions: state.allowRestrictions,
+    allowRotationOrigin: state.allowRotationOrigin,
     snapSteps: state.snapSteps,
     eventBus: state.eventBus,
     undoStack: state.undoStack
@@ -36,7 +37,7 @@ const mapStateToProps = (state) => ({
 
 class EditorContainer extends React.Component {
 
-    el = null;
+    root = null;
     editable = false;
     selectable = null;
     items = [];
@@ -44,19 +45,19 @@ class EditorContainer extends React.Component {
     ignoreStoring = false;
 
     shouldComponentUpdate(nextProps) {
-        if (this.el) {
+        if (this.root) {
             if (nextProps.content !== this.props.content) {
                 this.dropItems();
-                this.currentGroup = this.el;
+                this.currentGroup = this.root;
 
                 if (nextProps.content && nextProps.content.childNodes) {
                     while (nextProps.content.childNodes.length) {
-                        this.el.appendChild(nextProps.content.firstChild);
+                        this.root.appendChild(nextProps.content.firstChild);
                     }
                 } else {
                     this.handleDropLayer();
-                    while (this.el.lastElementChild) {
-                        this.el.removeChild(this.el.lastElementChild);
+                    while (this.root.lastElementChild) {
+                        this.root.removeChild(this.root.lastElementChild);
                     }
                 }
             }
@@ -87,7 +88,7 @@ class EditorContainer extends React.Component {
     }
 
     componentDidMount() {
-        this.currentGroup = this.el;
+        this.currentGroup = this.root;
 
         this.handleClick = this.handleClick.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
@@ -96,18 +97,18 @@ class EditorContainer extends React.Component {
         this.handleRedo = this.handleRedo.bind(this);
         this.reloadDraggables = this.reloadDraggables.bind(this);
 
-        this.el.addEventListener('mouseup', this.handleClick);
-        this.el.addEventListener('dblclick', this.handleDoubleClick);
+        this.root.addEventListener('mouseup', this.handleClick);
+        this.root.addEventListener('dblclick', this.handleDoubleClick);
         document.addEventListener('keydown', this.handleKeyDown);
 
-        this.el.classList.add('isolated-layer');
+        this.root.classList.add('isolated-layer');
 
         this.subscribeToEvents();
     }
 
     componentWillUnmount() {
-        this.el.removeEventListener('mouseup', this.handleClick);
-        this.el.removeEventListener('dblclick', this.handleDoubleClick);
+        this.root.removeEventListener('mouseup', this.handleClick);
+        this.root.removeEventListener('dblclick', this.handleDoubleClick);
         document.removeEventListener('keydown', this.handleKeyDown);
     }
 
@@ -128,7 +129,7 @@ class EditorContainer extends React.Component {
             textContent: 'text-content'
         }).map(([event, attribute]) => eventBus.on(event, (val) => {
             this.items.forEach(item => {
-                if (val !== undefined) item.el.setAttributeNS(null, attribute, val);
+                if (val !== undefined) item.elements.map(el => el.setAttributeNS(null, attribute, val));
                 if (textItemEvents.includes(event)) {
                     item.fitControlsToSize();
                     const { te } = item.storage.handles;
@@ -181,15 +182,17 @@ class EditorContainer extends React.Component {
             allowRotating,
             allowProportions,
             allowRestrictions,
+            allowRotationOrigin,
             snapSteps
         } = props;
 
-        const nextItems = subjx(target).drag({
+        const nextDraggable = subjx(target).drag({
             ...subjxConfiguration,
             ...(allowRestrictions && { restrict: '#editor-grid' }),
             draggable: allowDragging,
             resizable: allowResizing,
             rotatable: allowRotating,
+            rotationPoint: allowRotationOrigin,
             proportions: allowProportions,
             snap: {
                 x: snapSteps.x,
@@ -198,9 +201,9 @@ class EditorContainer extends React.Component {
             },
             onInit() {
                 // eslint-disable-next-line no-console
-                console.log('Draggable:: ', this.el);
+                console.log('Draggable:: ', this.elements);
 
-                this.options.scalable = this.el.tagName.toLowerCase() === 'text';
+                this.options.scalable = this.elements.length === 1 && this.elements[0].tagName.toLowerCase() === 'text';
 
                 // disables selection if active
                 if (self.selectable && self.props.selectable) {
@@ -242,12 +245,12 @@ class EditorContainer extends React.Component {
             onResize({ dx, dy }) {
                 self.setEditable(true);
 
-                const { tr, tl } = this.storage.handles;
+                const { tr, tl } = this._getVertices();
 
-                const lx1 = tl.cx.baseVal.value;
-                const ly1 = tl.cy.baseVal.value;
-                const lx2 = tr.cx.baseVal.value;
-                const ly2 = tr.cy.baseVal.value;
+                const lx1 = tl.x;
+                const ly1 = tl.y;
+                const lx2 = tr.x;
+                const ly2 = tr.y;
 
                 const lineLength = [lx1 - lx2, ly1 - ly2];
 
@@ -266,7 +269,7 @@ class EditorContainer extends React.Component {
 
                 undoStack.setItem({
                     name: 'resize',
-                    el: this.el,
+                    el: this.elements,
                     data: {
                         dx,
                         dy,
@@ -280,19 +283,59 @@ class EditorContainer extends React.Component {
             onMove({ dx, dy }) {
                 self.setEditable(true);
 
+                const { tr, tl } = this._getVertices();
+
+                const lx1 = tl.x;
+                const ly1 = tl.y;
+                const lx2 = tr.x;
+                const ly2 = tr.y;
+
+                const lineLength = [lx1 - lx2, ly1 - ly2];
+
+                const [nextX, nextY] = self.calcTooltipPosition(
+                    [lx2, ly2],
+                    lineLength,
+                    -30,
+                    45
+                );
+
+                const tooltip = this.controls.querySelector('.delete-sjx-item');
+                tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+
                 if (self.ignoreStoring) return self.ignoreStoring = false;
-                undoStack.setItem({ name: 'move', el: this.el, data: [dx, dy] });
+                undoStack.setItem({ name: 'move', el: this.elements, data: [dx, dy] });
             },
             onRotate({ delta }) {
                 self.setEditable(true);
 
+                const { tr, tl } = this._getVertices();
+
+                const lx1 = tl.x;
+                const ly1 = tl.y;
+                const lx2 = tr.x;
+                const ly2 = tr.y;
+
+                const lineLength = [lx1 - lx2, ly1 - ly2];
+
+                const [nextX, nextY] = self.calcTooltipPosition(
+                    [lx2, ly2],
+                    lineLength,
+                    -30,
+                    45
+                );
+
+                const tooltip = this.controls.querySelector('.delete-sjx-item');
+                tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+
                 if (self.ignoreStoring) return self.ignoreStoring = false;
-                undoStack.setItem({ name: 'rotate', data: delta, el: this.el });
+                undoStack.setItem({ name: 'rotate', data: delta, el: this.elements });
             },
             onDrop() {
                 setTimeout(() => (
                     self.setEditable(false)
                 ), 100);
+
+                //this.elements.map(el => subjx(el).css({ transform: el.getAttribute('transform') }));
 
                 if (self.ignoreStoring) return self.ignoreStoring = false;
                 undoStack.next();
@@ -301,7 +344,7 @@ class EditorContainer extends React.Component {
                 setTimeout(() => (
                     self.setEditable(false)
                 ), 100);
-                this.el.classList.remove('subjx-selected');
+                this.elements.map((el) => el.classList.remove('subjx-selected'));
                 // enables selection if active
                 if (self.selectable && self.props.selectable) {
                     self.selectable.start();
@@ -310,15 +353,15 @@ class EditorContainer extends React.Component {
         });
 
         this.props.eventBus.emit('settings', null, 'item');
-        this.props.$setSelectedItems({ items: [...nextItems] });
-        return nextItems;
+        this.props.$setSelectedItems({ items: [...this.items, nextDraggable] });
+        return nextDraggable;
     }
 
     reloadDraggables() {
         const { items } = this;
         const newItems = items.map((item) => {
             item.disable();
-            return item.el;
+            return [item.elements];
         });
 
         this.items = [...this.setDraggable(newItems)];
@@ -329,7 +372,8 @@ class EditorContainer extends React.Component {
 
         items.splice(items.indexOf(draggable), 1);
         draggable.disable();
-        draggable.el.parentNode.removeChild(draggable.el);
+
+        draggable.elements.map(el => el.parentNode.removeChild(el));
         this.props.eventBus.emit('settings', null, 'canvas');
     }
 
@@ -386,7 +430,7 @@ class EditorContainer extends React.Component {
 
             const newItems = this.setDraggable(selected);
 
-            this.items = [...newItems];
+            this.items = [newItems];
         });
 
         return ds;
@@ -419,7 +463,7 @@ class EditorContainer extends React.Component {
 
         const newItems = this.setDraggable(target);
 
-        items.push(...newItems);
+        items.push(newItems);
         this.items = items;
     }
 
@@ -449,7 +493,7 @@ class EditorContainer extends React.Component {
 
     handleDropLayer() {
         const { currentGroup } = this;
-        if (currentGroup === this.el) {
+        if (currentGroup === this.root) {
             return this.props.onLayerChange(
                 this.getLayerPath(currentGroup)
             );
@@ -472,7 +516,7 @@ class EditorContainer extends React.Component {
         let node = target;
         let layerChain = '';
 
-        while (node !== this.el) {
+        while (node !== this.root) {
             layerChain = (node.getAttribute('id') || node.nodeName) + ' / ' + layerChain;
             node = node.parentNode;
         }
@@ -514,7 +558,7 @@ class EditorContainer extends React.Component {
 
     applyCurrentGroupOpacity(el) {
         el.setAttributeNS(null, 'opacity', 1);
-        if (el === this.el) return;
+        if (el === this.root) return;
         [...el.parentNode.childNodes].forEach(child => {
             if (child.tagName === 'g' && child !== el) child.setAttributeNS(null, 'opacity', 0.3);
         });
@@ -558,10 +602,8 @@ class EditorContainer extends React.Component {
                 const delta = action.data;
                 const sjxEl = this.setDraggable(action.el);
 
-                sjxEl.forEach((item) => {
-                    item.exeRotate({ delta: delta * (revert ? -1 : 1) });
-                    item.disable();
-                });
+                sjxEl.exeRotate({ delta: delta * (revert ? -1 : 1) });
+                sjxEl.disable();
 
                 break;
             }
@@ -569,27 +611,23 @@ class EditorContainer extends React.Component {
                 const [dx, dy] = action.data;
                 const sjxEl = this.setDraggable(action.el);
 
-                sjxEl.forEach((item) => {
-                    item.exeDrag({
-                        dx: dx * (revert ? -1 : 1),
-                        dy: dy * (revert ? -1 : 1)
-                    });
-                    item.disable();
+                sjxEl.exeDrag({
+                    dx: dx * (revert ? -1 : 1),
+                    dy: dy * (revert ? -1 : 1)
                 });
+                sjxEl.disable();
                 break;
             }
             case 'resize': {
                 const { dx, dy, ...rest } = action.data;
                 const sjxEl = this.setDraggable(action.el);
 
-                sjxEl.forEach((item) => {
-                    item.exeResize({
-                        dx: dx * (revert ? -1 : 1),
-                        dy: dy * (revert ? -1 : 1),
-                        ...rest
-                    });
-                    item.disable();
+                sjxEl.exeResize({
+                    dx: dx * (revert ? -1 : 1),
+                    dy: dy * (revert ? -1 : 1),
+                    ...rest
                 });
+                sjxEl.disable();
             }
             default:
                 break;
@@ -599,7 +637,7 @@ class EditorContainer extends React.Component {
 
     render() {
         return (
-            <g id='editable-content' ref={el => this.el = el} />
+            <g id='editable-content' ref={el => this.root = el} />
         );
     }
 

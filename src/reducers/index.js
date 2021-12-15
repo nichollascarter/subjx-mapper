@@ -14,6 +14,7 @@ const initialState = {
     allowRotating: true,
     allowProportions: true,
     allowRestrictions: false,
+    allowRotationOrigin: false,
     snapSteps: {
         x: 10,
         y: 10,
@@ -21,7 +22,8 @@ const initialState = {
     },
     eventBus: new EventBus(),
     undoStack: new UndoStack(),
-    items: []
+    items: [],
+    globalData: new WeakMap()
 };
 
 function rootReducer(state = { ...initialState }, action) {
@@ -71,6 +73,11 @@ function rootReducer(state = { ...initialState }, action) {
             return {
                 ...state,
                 allowRestrictions: action.allowRestrictions
+            };
+        case 'SET_ALLOW_ROTATION_ORIGIN':
+            return {
+                ...state,
+                allowRotationOrigin: action.allowRotationOrigin
             };
         case 'SET_SNAP_STEPS':
             return {

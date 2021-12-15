@@ -22,7 +22,7 @@ import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
 import EditorMenu from './EditorMenu';
 import EditorItems from './EditorItems';
-import { CanvasSettings, ItemSettings } from './settings';
+import { CanvasSettings, ItemSettings, AnimationSettings } from './settings';
 
 const allowedSvgs = [
     'g', 'rect', 'path', 'polygon', 'polyline',
@@ -134,7 +134,7 @@ const Editor = (props) => {
     const [open, setOpen] = useState(false);
     const [leftOffset, setLeftOffset] = useState(57);
     const [content, setContent] = useState(null);
-    const [showSettings, setSettingsTab] = useState('canvas');
+    const [settingsTab, setSettingsTab] = useState('canvas');
 
     const parsedStyleSheet = new CSSStyleSheet();
 
@@ -265,6 +265,21 @@ const Editor = (props) => {
         props.eventBus.on('settings', (value) => setSettingsTab(value));
     }, []);
 
+    const { component: SettingsComponent } = [
+        {
+            component: _ => <CanvasSettings {..._} />,
+            condition: settingsTab === 'canvas'
+        },
+        {
+            component: _ => <ItemSettings {..._} />,
+            condition: settingsTab === 'item'
+        },
+        {
+            component: _ => <AnimationSettings {..._} />,
+            condition: settingsTab === 'animation'
+        }
+    ].find(({ condition }) => !!condition);
+
     return (
         // <div style={{ paddingTop: '60px' }}></div>
         <div>
@@ -334,10 +349,7 @@ const Editor = (props) => {
                         >
                             {content}
                         </EditorCanvas>
-                        {showSettings === 'canvas'
-                            ? <CanvasSettings width={drawerWidth} />
-                            : <ItemSettings width={drawerWidth} />
-                        }
+                        <SettingsComponent width={drawerWidth} />
                     </div>
                 </div>
             </div>

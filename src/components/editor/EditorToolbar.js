@@ -17,7 +17,8 @@ import {
     Search as SearchIcon,
     Crop32Outlined as Rectangle,
     FormatShapes as ShapeSettingsIcon,
-    Tune as CanvasSettingsIcon
+    Tune as CanvasSettingsIcon,
+    ControlCamera as AnimationIcon
 } from '@material-ui/icons';
 
 import { setEditorAction, activateEditorGrid } from '../../actions';
@@ -110,7 +111,8 @@ const EditorToolbar = (props) => {
 
     const options = [
         { type: 'button', selected: false, component: <ShapeSettingsIcon />, action: () => eventBus.emit('settings', null, 'item') },
-        { type: 'button', selected: false, component: <CanvasSettingsIcon />, action: () => eventBus.emit('settings', null, 'canvas') }
+        { type: 'button', selected: false, component: <CanvasSettingsIcon />, action: () => eventBus.emit('settings', null, 'canvas') },
+        { type: 'button', selected: false, component: <AnimationIcon />, action: () => eventBus.emit('settings', null, 'animation') }
     ];
 
     return (

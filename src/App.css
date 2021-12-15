@@ -65,3 +65,13 @@ html, body {
   background-color: rgba(255,255,255,.4);
   z-index: 0;
 }
+
+.sjx-hidden {
+  display: none;
+}
+
+.sjx-svg-hdl-rotator {
+  fill: #ebb838;
+  stroke: #ffffff;
+  r: 5;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 
@@ -13,6 +13,8 @@ import {
     Slider
 } from '@material-ui/core';
 
+import ColorPicker from '../../helpers/ColorPicker';
+
 import {
     setEditorPaperSize,
     setAllowDragging,
@@ -21,7 +23,8 @@ import {
     setAllowProportions,
     setAllowRestrictions,
     setSnapSteps,
-    setEditorGridSize
+    setEditorGridSize,
+    setAllowRotationOrigin
 } from '../../../actions';
 
 const useStyles = makeStyles(() => ({
@@ -71,6 +74,7 @@ const mapStateToProps = (state) => ({
     allowRotating: state.allowRotating,
     allowProportions: state.allowProportions,
     allowRestrictions: state.allowRestrictions,
+    allowRotationOrigin: state.allowRotationOrigin,
     snapSteps: state.snapSteps,
     editorGridSize: state.editorGridSize,
     eventBus: state.eventBus
@@ -84,7 +88,8 @@ const mapDispatchToProps = (dispatch) => ({
     $setAllowProportions: (act) => dispatch(setAllowProportions(act)),
     $setAllowRestrictions: (act) => dispatch(setAllowRestrictions(act)),
     $setSnapSteps: (act) => dispatch(setSnapSteps(act)),
-    $setEditorGridSize: (act) => dispatch(setEditorGridSize(act))
+    $setEditorGridSize: (act) => dispatch(setEditorGridSize(act)),
+    $setAllowRotationOrigin: (act) => dispatch(setAllowRotationOrigin(act))
 });
 
 const CanvasSettings = (props) => {
@@ -97,6 +102,7 @@ const CanvasSettings = (props) => {
         allowRotating,
         allowProportions,
         allowRestrictions,
+        allowRotationOrigin,
         editorGridSize,
         snapSteps
     } = props;
@@ -107,7 +113,9 @@ const CanvasSettings = (props) => {
     const [rotating, setRotating] = useState(allowRotating);
     const [proportions, setProportions] = useState(allowProportions);
     const [restrictions, setRestrictions] = useState(allowRestrictions);
+    const [rotatingOrigin, setRotatingOrigin] = useState(allowRotationOrigin);
     const [snap, setSnap] = useState(snapSteps);
+    const [fill, setFill] = useState('none');
 
     const handleChange = ([w, h]) => {
         if (Number(w) < 1 || Number(h) < 1) return;
@@ -152,6 +160,15 @@ const CanvasSettings = (props) => {
                 break;
             }
 
+            case 'rotationOrigin': {
+                setRotatingOrigin(value);
+                props.$setAllowRotationOrigin({ allowRotationOrigin: value });
+                break;
+            }
+
+            default:
+                break;
+
         }
     };
 
@@ -160,6 +177,16 @@ const CanvasSettings = (props) => {
         setSnap(snapValues);
         props.$setSnapSteps({ snapSteps: snapValues });
     };
+
+    const handleColorPicker = (value) => {
+        setFill(value.hex);
+        document.getElementById('editor-grid').setAttributeNS(null, 'fill', value.hex);
+    };
+
+    useEffect(() => {
+        const background = document.getElementById('editor-grid');
+        setFill(background.getAttributeNS(null, 'fill'));
+    }, []);
 
     return (
         <div
@@ -173,6 +200,9 @@ const CanvasSettings = (props) => {
                         <div className={classes.container}>
                             <TextInput label='width' value={paperSize.width} variant='outlined' size='small' onChange={(e) => handleChange([e.target.value, paperSize.height])} />
                             <TextInput label='height' value={paperSize.height} variant='outlined' size='small' onChange={(e) => handleChange([paperSize.width, e.target.value])} />
+                        </div>
+                        <div className={classes.container}>
+                            <ColorPicker value={fill} onChange={handleColorPicker} />
                         </div>
                         <Grid container>
                             <Grid item xs={12}>
@@ -215,6 +245,12 @@ const CanvasSettings = (props) => {
                                 value={restrictions}
                                 control={<Checkbox checked={restrictions} color='primary' onChange={handleSettings('restrictions')} />}
                                 label='Activate bounding area'
+                                labelPlacement='end'
+                            />
+                            <CheckboxLabel
+                                value={rotatingOrigin}
+                                control={<Checkbox checked={rotatingOrigin} color='primary' onChange={handleSettings('rotationOrigin')} />}
+                                label='Use rotation origin'
                                 labelPlacement='end'
                             />
                         </div>

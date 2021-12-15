@@ -146,7 +146,7 @@ const ItemSettings = (props) => {
     useEffect(() => {
         if (!selectedItems.length) return;
 
-        const textTag = isTextTag(selectedItems[0].el);
+        const textTag = isTextTag(selectedItems[0].elements[0]);
 
         Object.entries({
             fill: 'fill',
@@ -161,13 +161,13 @@ const ItemSettings = (props) => {
         }).map(([event, attribute]) => {
             setValue(
                 event,
-                selectedItems[0].el.getAttributeNS(null, attribute),
+                selectedItems[0].elements[0].getAttributeNS(null, attribute),
                 false
             );
         });
 
         if (textTag) {
-            setTextContent(selectedItems[0].el.textContent || '');
+            setTextContent(selectedItems[0].elements[0].textContent || '');
         } else {
             setTextContent(null);
         };
@@ -175,7 +175,7 @@ const ItemSettings = (props) => {
 
     const changeTextContent = (textContent) => {
         setTextContent(textContent);
-        selectedItems[0].el.textContent = textContent;
+        selectedItems[0].elements[0].textContent = textContent;
     };
 
     return (

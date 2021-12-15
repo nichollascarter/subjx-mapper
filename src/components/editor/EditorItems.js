@@ -35,9 +35,9 @@ const EditorItems = (props) => {
             maxWidth: '150px',
             textColor: 'transparent'
         },
-        onInit() {},
+        onInit() { },
         onDrop(e) {
-            const itemType = this.el.getAttribute('data-type');
+            const itemType = this.elements[0].getAttribute('data-type');
             let newItem = null;
 
             const editorRef = document.querySelector('#editor-background');
@@ -68,7 +68,7 @@ const EditorItems = (props) => {
                             cx: x,
                             cy: y,
                             rx: 45,
-                            ry: 45,       
+                            ry: 45,
                             stroke: 'black',
                             fill: 'transparent'
                         }

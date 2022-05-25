@@ -22,6 +22,7 @@ import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
 import EditorMenu from './EditorMenu';
 import EditorItems from './EditorItems';
+import EditorTimeline from './EditorTimeline';
 import { CanvasSettings, ItemSettings, AnimationSettings } from './settings';
 
 const allowedSvgs = [
@@ -32,7 +33,8 @@ const allowedSvgs = [
 const drawerWidth = 240;
 
 const mapStateToProps = (state) => ({
-    eventBus: state.eventBus
+    eventBus: state.eventBus,
+    editorPaperSize: state.editorPaperSize
 });
 
 const useStyles = makeStyles((theme) => ({
@@ -129,6 +131,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Editor = (props) => {
+    const {
+        editorPaperSize,
+        eventBus
+    } = props;
+
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = useState(false);
@@ -227,12 +234,7 @@ const Editor = (props) => {
     };
 
     const handleExport = () => {
-        const rootSVG = document.getElementById('editor-canvas');
-        const [width, height] = ['width', 'height'].map((attr) => (
-            rootSVG.getAttributeNS(null, attr)
-        ));
-
-        const rootHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+        const rootHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${editorPaperSize.width}" height="${editorPaperSize.height}">
             ${document.getElementById('editable-content').innerHTML}
         </svg>`;
 
@@ -262,7 +264,7 @@ const Editor = (props) => {
     }, [open]);
 
     useState(() => {
-        props.eventBus.on('settings', (value) => setSettingsTab(value));
+        eventBus.on('settings', value => setSettingsTab(value));
     }, []);
 
     const { component: SettingsComponent } = [
@@ -281,8 +283,7 @@ const Editor = (props) => {
     ].find(({ condition }) => !!condition);
 
     return (
-        // <div style={{ paddingTop: '60px' }}></div>
-        <div>
+        <>
             <div className={classes.menu}>
                 <EditorMenu
                     onImport={handleImport}
@@ -351,9 +352,10 @@ const Editor = (props) => {
                         </EditorCanvas>
                         <SettingsComponent width={drawerWidth} />
                     </div>
+                    <EditorTimeline eventBus={eventBus}/>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

@@ -69,15 +69,15 @@ const canvasGrid = (paperSize, gridSize) => {
     );
 };
 
-const mapStateToProps = (state) => {
-    return {
+const mapStateToProps = (state) => (
+    {
         editorAction: state.editorAction,
         editorGrid: state.editorGrid,
         editorGridSize: state.editorGridSize,
         editorPaperSize: state.editorPaperSize,
         eventBus: state.eventBus
-    };
-};
+    }
+);
 
 const EditorCanvas = (props) => {
     const classes = useStyles();
@@ -352,7 +352,6 @@ const EditorCanvas = (props) => {
                         <g id='controls-container' ref={div => controlsRef = div} />
                     </svg>
                 </div>
-
             </div>
         </div>
     );

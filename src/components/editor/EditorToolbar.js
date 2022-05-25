@@ -18,7 +18,11 @@ import {
     Crop32Outlined as Rectangle,
     FormatShapes as ShapeSettingsIcon,
     Tune as CanvasSettingsIcon,
-    ControlCamera as AnimationIcon
+    ControlCamera as AnimationIcon,
+    FlipToFront as BringForwardIcon,
+    FlipToBack as BringBackwardIcon,
+    Filter as BringToFrontIcon,
+    FilterNone as BringToBackIcon
 } from '@material-ui/icons';
 
 import { setEditorAction, activateEditorGrid } from '../../actions';
@@ -101,6 +105,11 @@ const EditorToolbar = (props) => {
         { type: 'button', selected: editorAction === 'alignTop', component: <AlignIcon transform='rotate(180)' />, action: () => eventBus.emit('alignTop') },
         { type: 'button', selected: editorAction === 'alignVertical', component: <AlignCenter transform='rotate(180)' />, action: () => eventBus.emit('alignVertical') },
         { type: 'button', selected: editorAction === 'alignBottom', component: <AlignIcon />, action: () => eventBus.emit('alignBottom') },
+        { type: 'divider' },
+        { type: 'button', selected: false, component: <BringForwardIcon />, action: () => eventBus.emit('forward') },
+        { type: 'button', selected: false, component: <BringBackwardIcon />, action: () => eventBus.emit('backward') },
+        { type: 'button', selected: false, component: <BringToFrontIcon />, action: () => eventBus.emit('toFront') },
+        { type: 'button', selected: false, component: <BringToBackIcon />, action: () => eventBus.emit('toBack') },
         { type: 'divider' },
         { type: 'button', selected: editorGrid === true, component: <GridOnIcon />, action: () => activateEditorGrid(true) },
         { type: 'button', selected: editorGrid === false, component: <GridOffIcon />, action: () => activateEditorGrid(false) },

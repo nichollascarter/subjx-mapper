@@ -14,7 +14,7 @@ const initialState = {
     allowRotating: true,
     allowProportions: true,
     allowRestrictions: false,
-    allowRotationOrigin: false,
+    allowTransformOrigin: false,
     snapSteps: {
         x: 10,
         y: 10,
@@ -77,7 +77,7 @@ function rootReducer(state = { ...initialState }, action) {
         case 'SET_ALLOW_ROTATION_ORIGIN':
             return {
                 ...state,
-                allowRotationOrigin: action.allowRotationOrigin
+                allowTransformOrigin: action.allowTransformOrigin
             };
         case 'SET_SNAP_STEPS':
             return {

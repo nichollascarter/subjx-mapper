@@ -74,22 +74,22 @@ const mapStateToProps = (state) => ({
     allowRotating: state.allowRotating,
     allowProportions: state.allowProportions,
     allowRestrictions: state.allowRestrictions,
-    allowRotationOrigin: state.allowRotationOrigin,
+    allowTransformOrigin: state.allowTransformOrigin,
     snapSteps: state.snapSteps,
     editorGridSize: state.editorGridSize,
     eventBus: state.eventBus
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    $setEditorPaperSize: (act) => dispatch(setEditorPaperSize(act)),
-    $setAllowDragging: (act) => dispatch(setAllowDragging(act)),
-    $setAllowResizing: (act) => dispatch(setAllowResizing(act)),
-    $setAllowRotating: (act) => dispatch(setAllowRotating(act)),
-    $setAllowProportions: (act) => dispatch(setAllowProportions(act)),
-    $setAllowRestrictions: (act) => dispatch(setAllowRestrictions(act)),
-    $setSnapSteps: (act) => dispatch(setSnapSteps(act)),
-    $setEditorGridSize: (act) => dispatch(setEditorGridSize(act)),
-    $setAllowRotationOrigin: (act) => dispatch(setAllowRotationOrigin(act))
+    $setEditorPaperSize: act => dispatch(setEditorPaperSize(act)),
+    $setAllowDragging: act => dispatch(setAllowDragging(act)),
+    $setAllowResizing: act => dispatch(setAllowResizing(act)),
+    $setAllowRotating: act => dispatch(setAllowRotating(act)),
+    $setAllowProportions: act => dispatch(setAllowProportions(act)),
+    $setAllowRestrictions: act => dispatch(setAllowRestrictions(act)),
+    $setSnapSteps: act => dispatch(setSnapSteps(act)),
+    $setEditorGridSize: act => dispatch(setEditorGridSize(act)),
+    $setAllowRotationOrigin: act => dispatch(setAllowRotationOrigin(act))
 });
 
 const CanvasSettings = (props) => {
@@ -102,7 +102,7 @@ const CanvasSettings = (props) => {
         allowRotating,
         allowProportions,
         allowRestrictions,
-        allowRotationOrigin,
+        allowTransformOrigin,
         editorGridSize,
         snapSteps
     } = props;
@@ -113,7 +113,7 @@ const CanvasSettings = (props) => {
     const [rotating, setRotating] = useState(allowRotating);
     const [proportions, setProportions] = useState(allowProportions);
     const [restrictions, setRestrictions] = useState(allowRestrictions);
-    const [rotatingOrigin, setRotatingOrigin] = useState(allowRotationOrigin);
+    const [rotatingOrigin, setRotatingOrigin] = useState(allowTransformOrigin);
     const [snap, setSnap] = useState(snapSteps);
     const [fill, setFill] = useState('none');
 
@@ -162,7 +162,7 @@ const CanvasSettings = (props) => {
 
             case 'rotationOrigin': {
                 setRotatingOrigin(value);
-                props.$setAllowRotationOrigin({ allowRotationOrigin: value });
+                props.$setAllowRotationOrigin({ allowTransformOrigin: value });
                 break;
             }
 
@@ -242,15 +242,15 @@ const CanvasSettings = (props) => {
                                 labelPlacement='end'
                             />
                             <CheckboxLabel
-                                value={restrictions}
-                                control={<Checkbox checked={restrictions} color='primary' onChange={handleSettings('restrictions')} />}
-                                label='Activate bounding area'
+                                value={rotatingOrigin}
+                                control={<Checkbox checked={rotatingOrigin} color='primary' onChange={handleSettings('rotationOrigin')} />}
+                                label='Use transform origin'
                                 labelPlacement='end'
                             />
                             <CheckboxLabel
-                                value={rotatingOrigin}
-                                control={<Checkbox checked={rotatingOrigin} color='primary' onChange={handleSettings('rotationOrigin')} />}
-                                label='Use rotation origin'
+                                value={restrictions}
+                                control={<Checkbox checked={restrictions} color='primary' onChange={handleSettings('restrictions')} />}
+                                label='Activate bounding area'
                                 labelPlacement='end'
                             />
                         </div>

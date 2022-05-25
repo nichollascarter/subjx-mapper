@@ -17,7 +17,7 @@
     "react-redux": "^7.2.3",
     "react-scripts": "3.2.0",
     "redux": "^4.0.5",
-    "subjx": "^1.0.0"
+    "subjx": "^1.1.0-rc.4"
   },
   "devDependencies": {
     "gh-pages": "^3.1.0"
@@ -44,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "workspaces": [
+    "packages"
+  ]
 }

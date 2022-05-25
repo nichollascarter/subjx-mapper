@@ -2,7 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import subjx from 'subjx';
 import DragSelect from 'dragselect';
+
 import { setSelectedItems } from '../../actions';
+import Animated from '../../packages/animated';
+import { generateUUID } from '../../util';
 
 const textItemEvents = [
     'letterSpacing',
@@ -12,11 +15,11 @@ const textItemEvents = [
 ];
 
 const subjxConfiguration = {
-    container: '#editor-container',
     controlsContainer: '#controls-container',
     rotatorAnchor: 'n',
     rotatorOffset: 30
 };
+
 
 const mapDispatchToProps = (dispatch) => ({
     $setSelectedItems: (act) => dispatch(setSelectedItems(act))
@@ -29,7 +32,7 @@ const mapStateToProps = (state) => ({
     allowRotating: state.allowRotating,
     allowProportions: state.allowProportions,
     allowRestrictions: state.allowRestrictions,
-    allowRotationOrigin: state.allowRotationOrigin,
+    allowTransformOrigin: state.allowTransformOrigin,
     snapSteps: state.snapSteps,
     eventBus: state.eventBus,
     undoStack: state.undoStack
@@ -41,14 +44,19 @@ class EditorContainer extends React.Component {
     editable = false;
     selectable = null;
     items = [];
-    currentGroup = null;
+    currentLayer = null;
     ignoreStoring = false;
+
+    timeliner;
+    animated;
+
+    itemsStorage = new WeakMap();
 
     shouldComponentUpdate(nextProps) {
         if (this.root) {
             if (nextProps.content !== this.props.content) {
                 this.dropItems();
-                this.currentGroup = this.root;
+                this.currentLayer = this.root;
 
                 if (nextProps.content && nextProps.content.childNodes) {
                     while (nextProps.content.childNodes.length) {
@@ -88,7 +96,7 @@ class EditorContainer extends React.Component {
     }
 
     componentDidMount() {
-        this.currentGroup = this.root;
+        this.currentLayer = this.root;
 
         this.handleClick = this.handleClick.bind(this);
         this.handleDoubleClick = this.handleDoubleClick.bind(this);
@@ -114,9 +122,14 @@ class EditorContainer extends React.Component {
 
     subscribeToEvents() {
         const { props: { eventBus } } = this;
+
         eventBus.on('undo', this.handleUndo);
         eventBus.on('redo', this.handleRedo);
         eventBus.on('settingUpdated', this.reloadDraggables);
+        eventBus.on('toFront', () => this.changeLayerPosition('front'));
+        eventBus.on('toBack', () => this.changeLayerPosition('back'));
+        eventBus.on('forward', () => this.changeLayerPosition('up'));
+        eventBus.on('backward', () => this.changeLayerPosition('down'));
 
         Object.entries({
             fill: 'fill',
@@ -128,28 +141,10 @@ class EditorContainer extends React.Component {
             lineHeight: 'line-height',
             textContent: 'text-content'
         }).map(([event, attribute]) => eventBus.on(event, (val) => {
-            this.items.forEach(item => {
+            this.items.map(item => {
                 if (val !== undefined) item.elements.map(el => el.setAttributeNS(null, attribute, val));
                 if (textItemEvents.includes(event)) {
-                    item.fitControlsToSize();
-                    const { te } = item.storage.handles;
-
-                    const lx1 = te.x1.baseVal.value;
-                    const ly1 = te.y1.baseVal.value;
-                    const lx2 = te.x2.baseVal.value;
-                    const ly2 = te.y2.baseVal.value;
-
-                    const lineLength = [lx1 - lx2, ly1 - ly2];
-
-                    const [nextX, nextY] = this.calcTooltipPosition(
-                        [lx2, ly2],
-                        lineLength,
-                        -30,
-                        45
-                    );
-
-                    const tooltip = item.controls.querySelector('.delete-sjx-item');
-                    tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+                    this.updateItemControls(item);
                 }
             });
         }));
@@ -162,6 +157,54 @@ class EditorContainer extends React.Component {
             b: 'alignBottom',
             v: 'alignVertical'
         }).map(([key, event]) => eventBus.on(event, () => this.applyAlignment(key)));
+
+        eventBus.on('animate', data => {
+            console.log(data);
+    
+            //this.playAnimations(data);
+        });
+
+        eventBus.on('variable-settings', (id) => console.log(id));
+    }
+
+    playAnimations(data) {
+        const { items, animated } = this;
+
+        if (items && items.length) {
+            animated.transform(data);
+            items.map(item => this.updateItemControls(item));
+        }
+    }
+
+    changeLayerPosition(position) {
+        const { items } = this;
+
+        this.items = [];
+
+        const nextItems = items.map((item) => {
+            const { elements } = item;
+            item.disable();
+
+            const nextElements = elements.map((element) => {
+                if (position === 'front')
+                    element.parentNode.appendChild(element);
+
+                if (position === 'back')
+                    element.parentNode.insertBefore(element, element.parentNode.firstChild);
+
+                if (element.previousElementSibling && position === 'up')
+                    element.parentNode.insertBefore(element, element.previousElementSibling);
+
+                if (element.nextElementSibling && position === 'down')
+                    element.parentNode.insertBefore(element.nextElementSibling, element);
+
+                return element;
+            });
+
+            return this.setDraggable(nextElements);
+        });
+
+        this.items = [...nextItems];
     }
 
     setEditable(value) {
@@ -182,26 +225,47 @@ class EditorContainer extends React.Component {
             allowRotating,
             allowProportions,
             allowRestrictions,
-            allowRotationOrigin,
-            snapSteps
+            allowTransformOrigin,
+            snapSteps,
+            eventBus
         } = props;
+
+        const targetEl = Array.isArray(target) ? target[0] : target;
+
+        const originX = targetEl.getAttributeNS(null, 'data-origin-x');
+        const originY = targetEl.getAttributeNS(null, 'data-origin-y');
 
         const nextDraggable = subjx(target).drag({
             ...subjxConfiguration,
             ...(allowRestrictions && { restrict: '#editor-grid' }),
+            container: props.root.current,
             draggable: allowDragging,
             resizable: allowResizing,
             rotatable: allowRotating,
-            rotationPoint: allowRotationOrigin,
+            transformOrigin: allowTransformOrigin,
             proportions: allowProportions,
             snap: {
                 x: snapSteps.x,
                 y: snapSteps.y,
                 angle: snapSteps.y
             },
+            ...(allowTransformOrigin && originX !== null && originY !== null && {
+                transformOrigin: [originX, originY]
+            }),
             onInit() {
                 // eslint-disable-next-line no-console
                 console.log('Draggable:: ', this.elements);
+
+                if (this.elements.length === 1) {
+                    let uuid = this.elements[0].getAttribute('data-uuid');
+
+                    if (!uuid) {
+                        uuid = generateUUID();
+                        this.elements[0].setAttribute('data-uuid', uuid);
+                    }
+
+                    eventBus.emit('timeliner-payload', uuid);
+                }
 
                 this.options.scalable = this.elements.length === 1 && this.elements[0].tagName.toLowerCase() === 'text';
 
@@ -235,12 +299,23 @@ class EditorContainer extends React.Component {
                 actionButton.setAttributeNS(null, 'pointer-events', 'bounding-box');
                 actionButton.setAttributeNS(null, 'fill', 'rgb(237, 28, 36)');
 
-                tooltip.addEventListener('click', () => {
-                    self.removeDraggable(this);
-                });
+                tooltip.addEventListener('click', () => self.removeDraggable(this));
                 tooltip.appendChild(actionButton);
 
                 this.controls.appendChild(tooltip);
+
+                // update origin for animated element
+                this.on('setPointEnd', () => {
+                    const { transformOrigin, transformOrigin: { x, y } } = this.storage;
+
+                    self.animated.setTransformOrigin(transformOrigin);
+                    self.animated.updateState();
+
+                    this.elements.map(element => {
+                        element.setAttributeNS(null, 'data-origin-x', x);
+                        element.setAttributeNS(null, 'data-origin-y', y);
+                    });
+                });
             },
             onResize({ dx, dy }) {
                 self.setEditable(true);
@@ -331,20 +406,18 @@ class EditorContainer extends React.Component {
                 undoStack.setItem({ name: 'rotate', data: delta, el: this.elements });
             },
             onDrop() {
+                self.animated.updateState();
                 setTimeout(() => (
                     self.setEditable(false)
                 ), 100);
-
-                //this.elements.map(el => subjx(el).css({ transform: el.getAttribute('transform') }));
 
                 if (self.ignoreStoring) return self.ignoreStoring = false;
                 undoStack.next();
             },
             onDestroy() {
-                setTimeout(() => (
-                    self.setEditable(false)
-                ), 100);
-                this.elements.map((el) => el.classList.remove('subjx-selected'));
+                setTimeout(() => self.setEditable(false), 100);
+
+                this.elements.map(el => el.classList.remove('subjx-selected'));
                 // enables selection if active
                 if (self.selectable && self.props.selectable) {
                     self.selectable.start();
@@ -354,6 +427,17 @@ class EditorContainer extends React.Component {
 
         this.props.eventBus.emit('settings', null, 'item');
         this.props.$setSelectedItems({ items: [...this.items, nextDraggable] });
+
+        this.animated = new Animated(
+            [...this.items, nextDraggable].reduce((res, { elements }) => [...res, ...elements], []),
+            {
+                container: props.root.current,
+                ...(allowTransformOrigin && originX !== null && originY !== null && {
+                    transformOrigin: [originX, originY]
+                })
+            }
+        );
+
         return nextDraggable;
     }
 
@@ -399,6 +483,8 @@ class EditorContainer extends React.Component {
             const tooltip = item.controls.querySelector('.delete-sjx-item');
             tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
         });
+
+        this.animated.updateState();
     }
 
     calcTooltipPosition(startPoint, lineLength, offset, angle) {
@@ -417,12 +503,12 @@ class EditorContainer extends React.Component {
     }
 
     makeSelectables() {
-        const ds = new DragSelect({
-            selectables: this.currentGroup.children,
+        const selectedItems = new DragSelect({
+            selectables: this.currentLayer.children,
             area: this.props.root.current
         });
 
-        ds.subscribe('callback', ({ items: selected }) => {
+        selectedItems.subscribe('callback', ({ items: selected }) => {
             const { items } = this;
 
             while (items.length > 0) items.pop().disable();
@@ -433,25 +519,22 @@ class EditorContainer extends React.Component {
             this.items = [newItems];
         });
 
-        return ds;
+        return selectedItems;
     }
 
     handleClick(e) {
         if (this.editable || !this.props.editable) return;
 
         const {
-            currentGroup,
+            currentLayer,
             items
         } = this;
 
-        const target = [...currentGroup.childNodes]
+        const target = [...currentLayer.childNodes]
             .find((child) => (
                 !(child.classList && child.classList.contains('sjx-drag')) &&
                 child.contains(e.target)
-            )) || (currentGroup === e.target ? e.target : null);
-
-        //console.log('Target:: ', target);
-        //console.log('Current group:: ', currentGroup);
+            )) || (currentLayer === e.target ? e.target : null);
 
         if (!target) return;
 
@@ -471,9 +554,9 @@ class EditorContainer extends React.Component {
         e.preventDefault();
         if (this.editable || !this.props.editable) return;
 
-        const { currentGroup } = this;
+        const { currentLayer } = this;
 
-        const target = [...currentGroup.childNodes]
+        const target = [...currentLayer.childNodes]
             .find((child) => (
                 (child.classList && child.classList.contains('sjx-drag')) &&
                 child.contains(e.target)
@@ -481,33 +564,33 @@ class EditorContainer extends React.Component {
 
         if (target && target.tagName === 'g') {
             this.dropItems();
-            this.currentGroup = target;
+            this.currentLayer = target;
             this.props.onLayerChange(
                 this.getLayerPath(target)
             );
-            currentGroup.classList.remove('isolated-layer');
+            currentLayer.classList.remove('isolated-layer');
             target.classList.add('isolated-layer');
             this.applyCurrentGroupOpacity(target);
         }
     }
 
     handleDropLayer() {
-        const { currentGroup } = this;
-        if (currentGroup === this.root) {
+        const { currentLayer } = this;
+        if (currentLayer === this.root) {
             return this.props.onLayerChange(
-                this.getLayerPath(currentGroup)
+                this.getLayerPath(currentLayer)
             );
         }
 
         this.dropItems();
-        currentGroup.classList.remove('isolated-layer');
-        const nextCurrentGroup = currentGroup.parentNode;
-        this.currentGroup = nextCurrentGroup;
+        currentLayer.classList.remove('isolated-layer');
+        const nextCurrentGroup = currentLayer.parentNode;
+        this.currentLayer = nextCurrentGroup;
         this.props.onLayerChange(
             this.getLayerPath(nextCurrentGroup)
         );
 
-        this.dropCurrentGroupOpacity(currentGroup);
+        this.dropCurrentGroupOpacity(currentLayer);
         this.applyCurrentGroupOpacity(nextCurrentGroup);
         nextCurrentGroup.classList.add('isolated-layer');
     }
@@ -530,13 +613,36 @@ class EditorContainer extends React.Component {
         this.items = nextItems;
     }
 
+    updateItemControls(item) {
+        item.fitControlsToSize();
+
+        const { te } = item.storage.handles;
+
+        const lx1 = te.x1.baseVal.value;
+        const ly1 = te.y1.baseVal.value;
+        const lx2 = te.x2.baseVal.value;
+        const ly2 = te.y2.baseVal.value;
+
+        const lineLength = [lx1 - lx2, ly1 - ly2];
+
+        const [nextX, nextY] = this.calcTooltipPosition(
+            [lx2, ly2],
+            lineLength,
+            -30,
+            45
+        );
+
+        const tooltip = item.controls.querySelector('.delete-sjx-item');
+        tooltip.setAttributeNS(null, 'transform', `translate(${nextX - 12}, ${nextY - 12})`);
+    }
+
     handleKeyDown(e) {
         const { items } = this;
         if (e.keyCode === 46) {
             while (items.length > 0) {
                 const item = items.pop();
                 item.disable();
-                item.el.parentNode.removeChild(item.el);
+                item.elements.map((el) => el.parentNode.removeChild(el));
             }
         } else if (e.keyCode === 65 && e.ctrlKey) {
             while (items.length > 0) items.pop().disable();
@@ -560,20 +666,19 @@ class EditorContainer extends React.Component {
         el.setAttributeNS(null, 'opacity', 1);
         if (el === this.root) return;
         [...el.parentNode.childNodes].forEach(child => {
-            if (child.tagName === 'g' && child !== el) child.setAttributeNS(null, 'opacity', 0.3);
+            if (child.tagName === 'g' && child !== el) child.classList.add('sjx-flip-opacity');
         });
         this.applyCurrentGroupOpacity(el.parentNode);
     }
 
     dropCurrentGroupOpacity(el) {
         [...el.parentNode.childNodes].forEach(child => {
-            if (child.tagName === 'g' && child !== el) child.setAttributeNS(null, 'opacity', 1);
+            if (child.tagName === 'g' && child !== el) child.classList.remove('sjx-flip-opacity');
         });
     }
 
     handleUndo() {
         const { undoStack } = this.props;
-
         const item = undoStack.undo();
 
         if (item) {
@@ -584,7 +689,6 @@ class EditorContainer extends React.Component {
 
     handleRedo() {
         const { undoStack } = this.props;
-
         const item = undoStack.redo();
 
         if (item) {

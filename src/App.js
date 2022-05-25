@@ -2,9 +2,10 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
+
 import './App.css';
 import store from './store';
-import Main from './components/Main';
+import Main from './components';
 
 const outerTheme = createMuiTheme({
     palette: {

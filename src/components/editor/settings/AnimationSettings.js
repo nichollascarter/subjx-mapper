@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import subjx from 'subjx';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import {
+    Add as AddIcon,
+    Delete as DeleteIcon
+} from '@material-ui/icons';
 
 import {
     FormGroup,
@@ -18,6 +19,8 @@ import {
     IconButton
 } from '@material-ui/core';
 
+import { generateUUID } from '../../../util';
+
 const TextInput = withStyles({
     root: {
         margin: 10,
@@ -26,28 +29,6 @@ const TextInput = withStyles({
         }
     }
 })(TextField);
-
-const BootstrapInput = withStyles((theme) => ({
-    root: {
-        'label + &': {
-            marginTop: theme.spacing(3)
-        }
-    },
-    input: {
-        borderRadius: 4,
-        position: 'relative',
-        backgroundColor: theme.palette.background.paper,
-        border: '1px solid #ced4da',
-        fontSize: 16,
-        paddingLeft: 10,
-        transition: theme.transitions.create(['border-color', 'box-shadow']),
-        '&:focus': {
-            borderRadius: 4,
-            borderColor: '#80bdff',
-            boxShadow: '0 0 0 0.2rem rgba(0,123,255,.25)'
-        }
-    }
-}))(InputBase);
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -77,51 +58,34 @@ const useStyles = makeStyles(() => ({
 
 const mapStateToProps = (state) => ({
     globalData: state.globalData,
-    selectedItems: state.items
+    selectedItems: state.items,
+    eventBus: state.eventBus
 });
 
 const AnimationSettings = (props) => {
     const classes = useStyles();
-    const { globalData, selectedItems } = props;
+    const { selectedItems, eventBus } = props;
 
-    const [keyframes, setKeyframes] = useState([]);
-    const [frameType, setFrameType] = useState('translateX');
-    const [frameValue, setFrameValue] = useState('');
-    const [duration, setDuration] = useState(5000);
+    const [variables, setVariables] = useState([]);
+    const [variableType, setVariableType] = useState('boolean');
+    const [variableName, setVariableName] = useState('');
 
-    const frameTypes = [
-        'translateX',
-        'translateY',
-        'translateZ',
-        'rotate',
-        'rotateX',
-        'rotateY',
-        'rotateZ',
-        'scale',
-        'scaleX',
-        'scaleY',
-        'scaleZ',
-        'skew',
-        'skewX',
-        'skewY',
-        'perspective'
+    const variablesTypes = [
+        'boolean',
+        'number',
+        'string'
     ];
 
     const setValue = (name, value) => {
         switch (name) {
 
-            case 'frameType': {
-                setFrameType(value);
+            case 'variableName': {
+                setVariableName(value);
                 break;
             }
 
-            case 'frameValue': {
-                setFrameValue(value);
-                break;
-            }
-
-            case 'duration': {
-                setDuration(value);
+            case 'variableType': {
+                setVariableType(value);
                 break;
             }
 
@@ -131,27 +95,28 @@ const AnimationSettings = (props) => {
         }
     };
 
-    const addKeyframe = () => {
-        setKeyframes([
-            ...keyframes,
+    const addVariable = useCallback(() => {
+        setVariables([
+            ...variables,
             {
-                frameType,
-                frameValue: parseFloat(frameValue),
-                duration: parseFloat(duration)
+                id: generateUUID(),
+                type: variableType,
+                name: variableName
             }
         ]);
+    }, [variables, variableType, variableName]);
+
+    const openVariableSettings = (id) => {
+        eventBus.emit('variable-settings', null, id);
     };
 
-    const playAnimation = useCallback(() => {
-        if (!selectedItems.length) return;
-
-        const clones = [...selectedItems[0].elements].map((element) => {
-            const el = element.cloneNode(true);
-            subjx(el).css({ transform: el.getAttributeNS(null, 'transform') });
-            element.parentNode.appendChild(el);
-            return el;
-        });
-    }, [selectedItems, keyframes]);
+    const removeVariable = useCallback((varId) => {
+        const index = variables.findIndex(({ id }) => varId === id);
+        variables.splice(index, 1);
+        setVariables([
+            ...variables
+        ]);
+    }, [variables]);
 
     useEffect(() => {
         if (!selectedItems.length) return;
@@ -167,58 +132,45 @@ const AnimationSettings = (props) => {
                     <div className={classes.padding}>
                         <Grid container>
                             <Typography className={classes.label} variant='subtitle1' align='left'>
-                                Keyframes
+                                Context
                             </Typography>
                         </Grid>
                         <Grid container>
                             <Grid item xs={6}>
-                                <Select
-                                    style={{ margin: 10 }}
+                                <TextInput
+                                    label='Name'
+                                    variant='outlined'
+                                    size='small'
+                                    value={variableName}
+                                    onChange={(e) => setValue('variableName', e.target.value)}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextInput
+                                    select
+                                    style={{ width: '80%' }}
                                     variant='outlined'
                                     native
-                                    value={frameType}
-                                    onChange={(e) => setValue('frameType', e.target.value)}
+                                    value={variableType}
+                                    onChange={(e) => setValue('variableType', e.target.value)}
                                     name='age'
-                                    input={<BootstrapInput value={1} />}
                                 >
-                                    {frameTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                                </Select>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextInput
-                                    label='value'
-                                    variant='outlined'
-                                    size='small'
-                                    value={frameValue}
-                                    onChange={(e) => setValue('frameValue', e.target.value)}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Grid container>
-                            <Grid item xs={6}>
-                                <TextInput
-                                    label='duration'
-                                    variant='outlined'
-                                    size='small'
-                                    value={duration}
-                                    onChange={(e) => setValue('duration', e.target.value)}
-                                />
+                                    {variablesTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                                </TextInput>
                             </Grid>
                         </Grid>
                         <div style={{ display: 'flex', justifyContent: 'end' }}>
-                            <AddIcon onClick={addKeyframe} />
+                            <AddIcon onClick={addVariable} />
                         </div>
                         <Grid container>
-                            {keyframes.map(({ frameType, duration }, index) => (
-                                <Grid key={`${index}-${frameType}`} container>
-                                    <Grid item xs={6}>{frameType}</Grid>
-                                    <Grid item xs={6}>{duration}</Grid>
+                            {variables.map(({ name, type, id }, index) => (
+                                <Grid key={`${index}-${name}-${type}`} container onClick={() => openVariableSettings(id)}>
+                                    <Grid item xs={4}>{name}</Grid>
+                                    <Grid item xs={4}>{type}</Grid>
+                                    <Grid item xs={4}><DeleteIcon onClick={() => removeVariable(id)} /></Grid>
                                 </Grid>
                             ))}
                         </Grid>
-                        <IconButton variant='outlined' onClick={playAnimation}>
-                            <PlayArrowIcon />
-                        </IconButton>
                     </div>
                 </FormGroup>
             </form>

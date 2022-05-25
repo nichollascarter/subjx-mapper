@@ -11,8 +11,18 @@ import {
     Grid,
     Slider,
     Select,
-    InputBase
+    InputBase,
+    TextField
 } from '@material-ui/core';
+
+const TextInput = withStyles({
+    root: {
+        margin: 10,
+        '& .MuiOutlinedInput-input': {
+            padding: '10px 10px'
+        }
+    }
+})(TextField);
 
 const BootstrapInput = withStyles((theme) => ({
     root: {
@@ -67,11 +77,14 @@ const mapStateToProps = (state) => ({
     selectedItems: state.items
 });
 
+const roundDimension = value => value.toFixed(0);
+
 const ItemSettings = (props) => {
     const classes = useStyles();
 
     const { eventBus, selectedItems } = props;
 
+    const [dimensions, setDimensions] = useState({ x: 0, y: 0, height: 0, width: 0, rotation: 0 });
     const [fill, setFill] = useState('none');
     const [fillOptions, setFillOptions] = useState('none');
     const [stroke, setStroke] = useState('none');
@@ -89,6 +102,14 @@ const ItemSettings = (props) => {
     const setValue = (name, value, isEmit = true) => {
         switch (name) {
 
+            case 'left':
+            case 'top':
+            case 'width':
+            case 'height':
+            case 'rotation': {
+                if (isEmit) eventBus.emit(name, null, value);
+                break;
+            }
             case 'fill': {
                 setFill(value);
                 if (isEmit) eventBus.emit(name, null, value);
@@ -170,7 +191,9 @@ const ItemSettings = (props) => {
             setTextContent(selectedItems[0].elements[0].textContent || '');
         } else {
             setTextContent(null);
-        };
+        }
+
+        if (selectedItems.length === 1) setDimensions(selectedItems[0].getDimensions());
     }, [selectedItems]);
 
     const changeTextContent = (textContent) => {
@@ -186,6 +209,20 @@ const ItemSettings = (props) => {
             <form style={{ width: '100%' }}>
                 <FormGroup aria-label='position'>
                     <div className={classes.padding}>
+                        <div className={classes.container}>
+                            <Typography className={classes.label} variant='subtitle1' align='left'>Dimensions</Typography>
+                        </div>
+                        <div className={classes.container}>
+                            <TextInput label='x' value={roundDimension(dimensions.x)} variant='outlined' size='small' onChange={(e) => setValue('left', e.target.value)} />
+                            <TextInput label='y' value={roundDimension(dimensions.y)} variant='outlined' size='small' onChange={(e) => setValue('top', e.target.value)} />
+                        </div>
+                        <div className={classes.container}>
+                            <TextInput label='width' value={roundDimension(dimensions.width)} variant='outlined' size='small' onChange={(e) => setValue('width', e.target.value)} />
+                            <TextInput label='height' value={roundDimension(dimensions.height)} variant='outlined' size='small' onChange={(e) => setValue('height', e.target.value)} />
+                        </div>
+                        <div className={classes.container}>
+                            <TextInput label='rotation' value={roundDimension(dimensions.rotation)} variant='outlined' size='small' onChange={(e) => setValue('rotation', e.target.value)} />
+                        </div>
                         <div className={classes.container}>
                             <Typography className={classes.label} variant='subtitle1' align='left'>
                                 Fill

@@ -34,8 +34,8 @@ export function setAllowRestrictions({ allowRestrictions }) {
     return { type: 'SET_ALLOW_RESTRICTIONS', allowRestrictions };
 }
 
-export function setAllowRotationOrigin({ allowRotationOrigin }) {
-    return { type: 'SET_ALLOW_ROTATION_ORIGIN', allowRotationOrigin };
+export function setAllowRotationOrigin({ allowTransformOrigin }) {
+    return { type: 'SET_ALLOW_ROTATION_ORIGIN', allowTransformOrigin };
 }
 
 export function setSnapSteps({ snapSteps }) {

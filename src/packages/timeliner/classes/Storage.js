@@ -1,4 +1,4 @@
-import { LayoutConstants } from '../consts';
+import { LAYOUT_CONSTANTS } from '../consts';
 import { StorageProxy } from './StorageProxy';
 //import { version as TIMELINER_VERSION } from '../../package.json';
 
@@ -13,9 +13,9 @@ class Storage {
         title: 'Untitled',
         ui: {
             currentTime: 0,
-            totalTime: LayoutConstants.default_length,
+            totalTime: LAYOUT_CONSTANTS.default_length,
             scrollTime: 0,
-            timeScale: LayoutConstants.time_scale
+            timeScale: LAYOUT_CONSTANTS.time_scale
         },
         tracks: []
     };
@@ -55,7 +55,7 @@ class Storage {
         for (let i = 0, il = descend.length; i < il; i++) {
             const path = descend[i];
             if (reference[path] === undefined) {
-                console.warn('Cant find ' + paths);
+                //console.warn('Cant find ' + paths);
                 return;
             }
             reference = reference[path];

@@ -1,7 +1,6 @@
 const DEFAULT_TIME_SCALE = 60;
 
-// Dimensions
-const LayoutConstants = {
+const LAYOUT_CONSTANTS = {
     LINE_HEIGHT: 32,
     DIAMOND_SIZE: 14,
     MARKER_TRACK_HEIGHT: 60,
@@ -17,4 +16,4 @@ const LayoutConstants = {
     STATE_MARKER_OFFSET: 0.1
 };
 
-export { LayoutConstants };
+export { LAYOUT_CONSTANTS };

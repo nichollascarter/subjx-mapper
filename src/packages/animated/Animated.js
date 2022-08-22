@@ -1088,7 +1088,7 @@ export default class Animated {
                 height: 0
             };
 
-            sets.map(({ name, data: { value = 0 } }) => {
+            sets.map(({ name, _value: value = 0 }) => {
                 const { getTransformMatrix } = [
                     {
                         getTransformMatrix: () => this._processTranslate(element, { x: value, y: value }),

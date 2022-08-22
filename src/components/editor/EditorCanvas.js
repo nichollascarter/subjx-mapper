@@ -5,7 +5,7 @@ import { Button } from '@material-ui/core';
 import ZoomableGroup from '../helpers/ZoomableGroup';
 import EditorContent from './EditorContent';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
     root: {
         '-webkit-box-flex': 1,
         '-ms-flex': 1,
@@ -20,16 +20,14 @@ const useStyles = makeStyles(() => ({
         top: 0,
         left: 0
     },
-    canvasContent: {
-        backgroundColor: 'white'
-    },
     page: {
         boxShadow: '0px 0px 2px 1px #d1d1d1'
     },
     layerBar: {
         position: 'absolute',
         zIndex: 99999,
-        margin: 4
+        left: 150,
+        padding: theme.spacing(1)
     }
 }));
 
@@ -294,8 +292,7 @@ const EditorCanvas = (props) => {
                     right: rightOffset,
                     bottom: 0,
                     position: 'absolute',
-                    cursor: 'auto',
-                    overflow: 'scroll'
+                    cursor: 'auto'
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseDown={handleMouseDown}

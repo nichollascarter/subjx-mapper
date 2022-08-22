@@ -1,4 +1,4 @@
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 import { Theme } from '../theme.js';
 import { DragHandler, scaledTime } from '../helpers';
 import { ScrollCanvas } from './ScrollCanvas';
@@ -12,7 +12,7 @@ const {
     width: WIDTH,
     height: HEIGHT,
     WIDTH_OFFSET
-} = LayoutConstants;
+} = LAYOUT_CONSTANTS;
 
 const TIME_SCROLLER_HEIGHT = 35,
     MARKER_TRACK_HEIGHT = 25;

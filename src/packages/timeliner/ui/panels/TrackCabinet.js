@@ -2,7 +2,7 @@
 import { TrackSettings } from './TrackSettings';
 import { IconButton } from '../controls';
 import { setStyles } from '../../utils/common';
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 import { Theme } from '../theme';
 
 
@@ -47,7 +47,7 @@ class TrackCabinet {
             borderBottom: '1px solid ' + Theme.border,
             top: 0,
             left: 0,
-            height: (LayoutConstants.LINE_HEIGHT - 1) + 'px',
+            height: (LAYOUT_CONSTANTS.LINE_HEIGHT - 1) + 'px',
             color: Theme.font
         });
 

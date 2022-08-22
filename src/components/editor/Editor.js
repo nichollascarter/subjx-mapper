@@ -1,27 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import parse from 'html-react-parser';
 import { saveAs } from 'file-saver';
 import 'construct-style-sheets-polyfill';
 
 import {
-    Drawer,
-    AppBar,
     CssBaseline,
-    Divider,
-    IconButton
+    Paper
 } from '@material-ui/core';
-
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
+import EditorSettings from './EditorSettings';
 import EditorMenu from './EditorMenu';
-import EditorItems from './EditorItems';
 import EditorTimeline from './EditorTimeline';
 import { CanvasSettings, ItemSettings, AnimationSettings } from './settings';
 
@@ -40,93 +33,34 @@ const mapStateToProps = (state) => ({
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
-        marginTop: 46,
-        minHeight: 'calc(100vh - 46px)',
-        height: 'calc(100vh - 46px)',
+        marginTop: 0,
+        minHeight: '100vh',
+        height: '100vh',
         justifyItems: 'center',
         backgroundColor: '#e6e5e5'
-    },
-    menu: {
-        display: 'flex',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        height: 46,
-        width: '100%',
-        zIndex: 999,
-        backgroundColor: theme.palette.primary.main
-    },
-    canvas: {
-        flexGrow: 1
-        // overflow: 'hidden auto'
     },
     canvasContainer: {
         display: 'flex',
         flex: 1,
         flexDirection: 'column'
     },
-    appBar: {
-        borderTop: '1px solid #fff',
-        color: 'rgba(0,0,0,0.65)',
-        backgroundColor: 'rgb(230 229 229)',
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen
-        }),
-        position: 'relative',
-        height: 46
-    },
-    appBarShift: {
-        // marginLeft: drawerWidth,
-        // width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen
-        })
-    },
-    menuButton: {
-        marginRight: 36
-    },
-    hide: {
-        display: 'none'
-    },
-    drawer: {
-        width: drawerWidth,
-        flexShrink: 0,
-        whiteSpace: 'nowrap'
-    },
-    drawerPaper: {
-        position: 'relative',
-        backgroundColor: '#fdfdfd'
-    },
-    drawerOpen: {
-        width: drawerWidth,
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen
-        })
-    },
-    drawerClose: {
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen
-        }),
-        overflowX: 'hidden',
-        width: theme.spacing(7) + 1,
-        [theme.breakpoints.up('sm')]: {
-            width: theme.spacing(7) + 1
-        }
-    },
-    toolbar: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: theme.spacing(0, 1)
-    },
     content: {
         flexGrow: 1,
         padding: theme.spacing(2)
+    },
+    leftContainer: {
+        position: 'absolute',
+        paddingLeft: theme.spacing(2),
+        padding: theme.spacing(1),
+        left: 0,
+        zIndex: 100
+    },
+    rightContainer: {
+        position: 'absolute',
+        paddingRight: theme.spacing(2),
+        padding: theme.spacing(1),
+        right: 0,
+        zIndex: 100
     }
 }));
 
@@ -283,79 +217,45 @@ const Editor = (props) => {
     ].find(({ condition }) => !!condition);
 
     return (
-        <>
-            <div className={classes.menu}>
-                <EditorMenu
-                    onImport={handleImport}
-                    onExport={handleExport}
-                    onClearArea={handleClearArea}
-                />
-            </div>
-            <div className={classes.root}>
-                <CssBaseline />
-                <Drawer
-                    open={open}
-                    variant='permanent'
-                    className={clsx(classes.drawer, {
-                        [classes.drawerOpen]: open,
-                        [classes.drawerClose]: !open
-                    })}
-                    classes={{
-                        paper: clsx(classes.drawerPaper, {
-                            [classes.drawerOpen]: open,
-                            [classes.drawerClose]: !open
-                        })
-                    }}
-                >
-                    <div className={classes.toolbar}>
-                        <IconButton onClick={handleDrawerClose}>
-                            {
-                                theme.direction === 'rtl'
-                                    ? <ChevronRightIcon />
-                                    : <ChevronLeftIcon />
-                            }
-                        </IconButton>
-                        <IconButton
-                            color='inherit'
-                            aria-label='open drawer'
-                            onClick={handleDrawerOpen}
-                            edge='start'
-                            className={clsx({
-                                [classes.hide]: open
-                            })}
-                        >
-                            <ChevronRightIcon />
-                        </IconButton>
-                    </div>
-                    <Divider />
-                    <EditorItems onDrop={appendNewItem} />
-                    <Divider />
-                </Drawer>
-                <div className={classes.canvasContainer}>
-                    <AppBar
-                        // position='fixed'
-                        className={clsx(classes.appBar, {
-                            [classes.appBarShift]: open
-                        })}
+        <div className={classes.root}>
+            <CssBaseline />
+            <div className={classes.canvasContainer}>
+                <div className={classes.leftContainer}>
+                    <EditorMenu
+                        onImport={handleImport}
+                        onExport={handleExport}
+                        onClearArea={handleClearArea}
+                    />
+                    <Paper style={{ marginTop: 20 }} elevation={1}>
+                        <EditorToolbar onDrop={appendNewItem} />
+                    </Paper>
+                </div>
+                {/* <div className={classes.content}> */}
+                <div style={{ position: 'relative', height: '100%' }}>
+                    <EditorCanvas
+                        leftOffset={0}
+                        topOffset={87}
+                        rightOffset={0}
+                        mouseAction='edit'
                     >
-                        <EditorToolbar />
-                    </AppBar>
-                    {/* <div className={classes.content}> */}
-                    <div style={{ position: 'relative', height: '100%' }}>
-                        <EditorCanvas
-                            leftOffset={leftOffset}
-                            topOffset={87}
-                            rightOffset={drawerWidth}
-                            mouseAction='edit'
-                        >
-                            {content}
-                        </EditorCanvas>
-                        <SettingsComponent width={drawerWidth} />
-                    </div>
-                    <EditorTimeline eventBus={eventBus}/>
+                        {content}
+                    </EditorCanvas>
                 </div>
             </div>
-        </>
+            <Paper style={{ position: 'absolute', bottom: 0, margin: 10, marginLeft: 300, zIndex: 100 }} elevation={1}>
+                <EditorTimeline eventBus={eventBus} />
+            </Paper>
+            <div className={classes.rightContainer}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Paper elevation={1}>
+                        <EditorSettings />
+                    </Paper>
+                </div>
+                <Paper elevation={1} style={{ marginTop: 20 }}>
+                    <SettingsComponent width={drawerWidth} />
+                </Paper>
+            </div>
+        </div>
     );
 };
 

@@ -286,7 +286,7 @@ class TimelineControls {
 
         let draggingRange = 0;
 
-        const changeRange = () => dispatcher.fire('update.scale', 60 * Math.pow(2, -range.value));
+        const changeRange = () => dispatcher.fire('update.scale', 120 * Math.pow(4, -range.value));
 
         range.addEventListener('mousedown', () => draggingRange = 1);
 

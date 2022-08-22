@@ -1,6 +1,6 @@
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 
-const { LEFT_GUTTER } = LayoutConstants;
+const { LEFT_GUTTER } = LAYOUT_CONSTANTS;
 
 export default class ScaledTime {
 

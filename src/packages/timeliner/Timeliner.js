@@ -21,12 +21,11 @@ import {
     setStyles,
     saveToFile,
     openAs,
-    STORAGE_PREFIX
+    STORAGE_PREFIX,
+    randomHexColor
 } from './utils/common';
 
-import { TrackProp } from './ui/helpers';
-
-import { LayoutConstants as Settings } from './consts';
+import { LAYOUT_CONSTANTS as Settings } from './consts';
 
 const { STATE_MARKER_OFFSET } = Settings;
 
@@ -74,7 +73,7 @@ class Timeliner extends Timeline {
                 track.values.splice(time, 0, {
                     time: currentTime,
                     value,
-                    _color: '#' + (Math.random() * 0xffffff | 0).toString(16)
+                    _color: randomHexColor()
                 });
                 undoStack.save(new UndoState(this.data, 'Add Keyframe'));
             } else {
@@ -95,7 +94,7 @@ class Timeliner extends Timeline {
 
                 track.values.splice(keyframe, 0, {
                     value,
-                    _color: '#' + (Math.random() * 0xffffff | 0).toString(16),
+                    _color: randomHexColor(),
                     state: currentState
                 });
                 undoStack.save(new UndoState(this.data, 'Add Keyframe'));
@@ -120,7 +119,7 @@ class Timeliner extends Timeline {
                 track.values.splice(value, 0, {
                     time: currentTime,
                     value,
-                    _color: '#' + (Math.random() * 0xffffff | 0).toString(16)
+                    _color: randomHexColor()
                 });
                 if (!dontSave)
                     undoStack.save(new UndoState(data, 'Add value'));

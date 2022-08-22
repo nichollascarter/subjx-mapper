@@ -1,4 +1,4 @@
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 import { Theme } from '../theme';
 import {
     EasingRect,
@@ -11,7 +11,7 @@ const {
     LINE_HEIGHT,
     width: WIDTH,
     STATE_MARKER_OFFSET
-} = LayoutConstants;
+} = LAYOUT_CONSTANTS;
 
 class TrackPattern {
 

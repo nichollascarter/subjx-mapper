@@ -2,10 +2,10 @@ import { Theme } from '../theme';
 import { NumberUI, ToggleButton, IconButton } from '../controls';
 import easing from '../../core/easing';
 import { timeInTrack, keyframeAtState } from '../../core';
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 import { setStyles } from '../../utils/common';
 
-const { LINE_HEIGHT } = LayoutConstants;
+const { LINE_HEIGHT } = LAYOUT_CONSTANTS;
 
 class TrackSettings {
 
@@ -167,10 +167,12 @@ class TrackSettings {
 
         if (!o) return;
 
-        if (o.doEasing) {
+        const { doEasing, easing, keyframe, entry = {}, value } = o;
+
+        if (doEasing) {
             dropdown.style.opacity = 1;
             dropdown.disabled = false;
-            dropdown.value = o.easing ? o.easing : 'none';
+            dropdown.value = easing ? easing : 'none';
 
             duration.dom.disabled = false;
             duration.dom.style.opacity = 1;
@@ -182,16 +184,16 @@ class TrackSettings {
             }
         }
 
-        if (o.keyframe) {
+        if (keyframe) {
             keyframeButton.style.color = Theme.cursor;
             keyframeButton.disabled = true;
             //duration.dom.style.opacity = 1;
         }
 
-        state.get('_value').value = o.value;
-        state.get('_duration').value = o.entry.duration || 0;
-        entryValue.setValue(o.value);
-        duration.setValue(o.entry.duration || 0);
+        state.get('_value').value = value;
+        state.get('_duration').value = entry.duration || 0;
+        entryValue.setValue(value);
+        duration.setValue(entry.duration || 0);
 
         duration.paint();
         entryValue.paint();

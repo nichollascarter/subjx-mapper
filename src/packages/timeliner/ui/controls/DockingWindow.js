@@ -1,5 +1,5 @@
 import { Do } from '../../classes/Do';
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 
 const SNAP_FULL_SCREEN = 'full-screen';
 const SNAP_TOP_EDGE = 'snap-top-edge'; // or actually top half
@@ -32,7 +32,7 @@ class DockingWindow {
     resizes = new Do();
     snapBounds = {};
     snapType = SNAP_DOCK_BOTTOM;
-    bounds = { left: 0, top: 0, width: LayoutConstants.width, height: LayoutConstants.height };
+    bounds = { left: 0, top: 0, width: LAYOUT_CONSTANTS.width, height: LAYOUT_CONSTANTS.height };
 
     constructor(panel, ghostpanel) {
         this.panel = panel;
@@ -45,8 +45,8 @@ class DockingWindow {
         const { panel, ghostpanel } = this;
         window.addEventListener('resize', () => this.resizeEdges());
 
-        setBounds(panel, 0, 0, LayoutConstants.width, LayoutConstants.height);
-        setBounds(ghostpanel, 0, 0, LayoutConstants.width, LayoutConstants.height);
+        setBounds(panel, 0, 0, LAYOUT_CONSTANTS.width, LAYOUT_CONSTANTS.height);
+        setBounds(ghostpanel, 0, 0, LAYOUT_CONSTANTS.width, LAYOUT_CONSTANTS.height);
 
         // Mouse events
         panel.addEventListener('mousedown', e => this.onMouseDown(e));

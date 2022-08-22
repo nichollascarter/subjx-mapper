@@ -9,8 +9,8 @@ class Timeline {
     options = {};
     cb = _ => _;
 
-    constructor(options, cb = _ => _) {
-        this.options = { ...(options || {}) };
+    constructor(options = {}, cb = _ => _) {
+        this.options = { ...options };
         this.cb = cb;
 
         const trackStore = this.data.get('tracks');

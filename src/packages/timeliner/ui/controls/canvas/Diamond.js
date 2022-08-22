@@ -1,8 +1,8 @@
 import { scaledTime } from '../../helpers';
-import { LayoutConstants } from '../../../consts';
+import { LAYOUT_CONSTANTS } from '../../../consts';
 import { Theme } from '../../theme';
 
-const { LINE_HEIGHT, DIAMOND_SIZE } = LayoutConstants;
+const { LINE_HEIGHT, DIAMOND_SIZE } = LAYOUT_CONSTANTS;
 
 const halfSize = DIAMOND_SIZE / 2;
 

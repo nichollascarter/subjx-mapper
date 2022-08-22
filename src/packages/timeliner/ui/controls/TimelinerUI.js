@@ -3,7 +3,7 @@ import { ScrollBar } from './Scrollbar';
 import { DockingWindow } from './DockingWindow';
 import { setStyles } from '../../utils/common';
 import { Theme } from '../theme';
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 import '../../index.css';
 
 const Z_INDEX = 1100;
@@ -12,7 +12,7 @@ const {
     LEFT_PANE_WIDTH,
     MARKER_TRACK_HEIGHT,
     height: HEIGHT
-} = LayoutConstants;
+} = LAYOUT_CONSTANTS;
 
 class TimelinerUI {
 
@@ -47,15 +47,15 @@ class TimelinerUI {
             position: 'relative',
             display: 'block',
             width: LEFT_PANE_WIDTH + 'px',
-            top: '25px', // LayoutConstants.MARKER_TRACK_HEIGHT + 'px',
+            top: '25px', // LAYOUT_CONSTANTS.MARKER_TRACK_HEIGHT + 'px',
             height: (HEIGHT - MARKER_TRACK_HEIGHT) + 'px'
         });
 
         setStyles(trackSettings, {
             position: 'relative',
-            height: (LayoutConstants.height - LayoutConstants.MARKER_TRACK_HEIGHT) + 'px',
+            height: (LAYOUT_CONSTANTS.height - LAYOUT_CONSTANTS.MARKER_TRACK_HEIGHT) + 'px',
             width: 50,
-            top: '25px' // LayoutConstants.MARKER_TRACK_HEIGHT + 'px',
+            top: '25px' // LAYOUT_CONSTANTS.MARKER_TRACK_HEIGHT + 'px',
         });
 
         toolBar.classList.add('tml-toolbar');

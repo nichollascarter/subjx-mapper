@@ -29,11 +29,6 @@ import {
 
 const useStyles = makeStyles(() => ({
     root: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        backgroundColor: '#fdfdfd',
         zIndex: 999
     },
     container: {

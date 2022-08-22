@@ -1,6 +1,6 @@
 import { Do } from '../../classes/Do';
 import { setStyles } from '../../utils/common';
-import { LayoutConstants } from '../../consts';
+import { LAYOUT_CONSTANTS } from '../../consts';
 
 const scrolltrackStyle = {
     position: 'absolute',
@@ -14,7 +14,7 @@ const scrollbarStyle = {
     position: 'relative'
 };
 
-const { LINE_HEIGHT } = LayoutConstants;
+const { LINE_HEIGHT } = LAYOUT_CONSTANTS;
 
 class ScrollBar {
 

@@ -20,7 +20,6 @@ const subjxConfiguration = {
     rotatorOffset: 30
 };
 
-
 const mapDispatchToProps = (dispatch) => ({
     $setSelectedItems: (act) => dispatch(setSelectedItems(act))
 });
@@ -159,12 +158,10 @@ class EditorContainer extends React.Component {
         }).map(([key, event]) => eventBus.on(event, () => this.applyAlignment(key)));
 
         eventBus.on('animate', data => {
-            console.log(data);
-    
-            //this.playAnimations(data);
+            this.playAnimations(data[0].tracks);
         });
 
-        eventBus.on('variable-settings', (id) => console.log(id));
+        eventBus.on('variable-settings', id => console.log(id));
     }
 
     playAnimations(data) {

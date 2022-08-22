@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import { IconButton, Paper } from '@material-ui/core';
 import ImportIcon from '@material-ui/icons/GetApp';
 import SaveIcon from '@material-ui/icons/Save';
 import Delete from '@material-ui/icons/Delete';
@@ -10,17 +10,15 @@ const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
         justifyContent: 'center',
-        padding: '0 8px'
-    },
-    extendedIcon: {
-        marginRight: theme.spacing(1)
+        zIndex: 99999,
+        padding: theme.spacing(1)
     }
 }));
 
 const ExtendedButton = withStyles({
     root: {
-        color: '#fff',
-        marginRight: '10px'
+        color: 'rgba(0,0,0,0.65)',
+        padding: 6
     }
 })(IconButton);
 
@@ -64,7 +62,7 @@ const EditorMenu = (props) => {
     };
 
     return (
-        <div className={classes.root}>
+        <Paper className={classes.root} elevation={1}>
             <ExtendedButton onClick={handleFileSelect}>
                 <ImportIcon />
             </ExtendedButton>
@@ -74,7 +72,7 @@ const EditorMenu = (props) => {
             <ExtendedButton onClick={() => props.onClearArea()}>
                 <Delete />
             </ExtendedButton>
-        </div>
+        </Paper>
     );
 };
 

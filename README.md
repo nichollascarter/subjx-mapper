@@ -13,11 +13,11 @@ SVG [editor](https://nichollascarter.github.io/subjx-mapper/) based on [subjx](h
 
 - [x] Support group and nested svg elements editing
 
-- [ ] Edit/draw svg path
+- [ ] Edit / draw svg path
 
-- [ ] Group/ungroup svg elements
+- [ ] Group / ungroup svg elements
 
-- [ ] Undo/redo stack
+- [ ] Undo / redo stack
 
 ### Built with
 

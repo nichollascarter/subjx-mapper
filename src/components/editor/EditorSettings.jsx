@@ -1,0 +1,61 @@
+import { makeStyles } from '@mui/styles';
+import { connect } from 'react-redux';
+import {
+  FormatShapes as ShapeSettingsIcon,
+  Tune as CanvasSettingsIcon
+} from '@mui/icons-material';
+
+import { ExtendedButton } from '@/components/ui/ExtendedButton';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%'
+  },
+  flex: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%'
+  },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'column'
+  }
+}));
+
+const mapStateToProps = (state) => {
+  return {
+    editorAction: state.editorAction,
+    editorGrid: state.editorGrid,
+    eventBus: state.eventBus
+  };
+};
+
+const EditorSettings = (props) => {
+  const classes = useStyles();
+
+  const {
+    eventBus
+  } = props;
+
+  const options = [
+    { type: 'button', selected: false, component: <ShapeSettingsIcon />, action: () => eventBus.emit('settings', null, 'item') },
+    { type: 'button', selected: false, component: <CanvasSettingsIcon />, action: () => eventBus.emit('settings', null, 'canvas') }
+  ];
+
+  return (
+    <div className={classes.root}>
+      <div className={classes.flex}>
+        {options.map(({ type, component, action, selected, value }, index) => (
+          <div key={`${index}button`} className={classes.toolbar}>{
+            <ExtendedButton disabled={selected} onClick={() => action()}>{component}</ExtendedButton>
+          }</div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default connect(mapStateToProps)(EditorSettings);

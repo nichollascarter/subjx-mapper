@@ -9,7 +9,7 @@ import {
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
 import { readText } from '@/util/file-reader';
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: { editorAction: 'string'; editorGrid: boolean; eventBus: any; }) => {
   return {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -17,7 +17,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const FileOpenSave = (props) => {
+const FileOpenSave = (props: { onImport: (v: string) => void; onExport: () => void }) => {
   const [fileSelector, setFileSelector] = useState(
     document.createElement('input')
   );
@@ -31,7 +31,7 @@ const FileOpenSave = (props) => {
 
     setFileSelector(fileSelector);
 
-    const loadFiles = async (e) => {
+    const loadFiles = async (e: { target: any; }) => {
       try {
         const res = await readText(e.target);
         props.onImport(res);
@@ -44,7 +44,7 @@ const FileOpenSave = (props) => {
     fileSelector.addEventListener('change', loadFiles, false);
   }, [props]);
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = (e: { preventDefault: () => void; target: { value: string; }; }) => {
     fileSelector.click();
     e.preventDefault();
     e.target.value = '';

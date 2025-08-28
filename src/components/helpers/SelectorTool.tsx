@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
-const EditorSelector = (props) => {
-  let selectorRef = useRef(null);
+const SelectorTool = (props) => {
+  const selectorRef = useRef(null);
 
   const [selectorActive, setOpenSelector] = useState(props.enable);
   const [selectorStyle, setSelectorStyle] = useState({
@@ -123,4 +123,4 @@ const EditorSelector = (props) => {
   );
 };
 
-export default EditorSelector;
+export { SelectorTool };

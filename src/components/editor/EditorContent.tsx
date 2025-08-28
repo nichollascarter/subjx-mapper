@@ -196,10 +196,15 @@ class EditorContainer extends React.Component {
   }
 
   setDraggable(target) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const {
       items,
-      props
+      props,
+      selectable,
+      calcTooltipPosition,
+      removeDraggable,
+      setEditable
     } = this;
 
     const {
@@ -254,8 +259,8 @@ class EditorContainer extends React.Component {
         this.options.scalable = this.elements.length === 1 && this.elements[0].tagName.toLowerCase() === 'text';
 
         // disables selection if active
-        if (self.selectable && self.props.selectable) {
-          self.selectable.stop();
+        if (selectable && props.selectable) {
+          selectable.stop();
         }
 
         const { te } = this.storage.handles;
@@ -267,7 +272,7 @@ class EditorContainer extends React.Component {
 
         const lineLength = [lx1 - lx2, ly1 - ly2];
 
-        const [nextX, nextY] = self.calcTooltipPosition(
+        const [nextX, nextY] = calcTooltipPosition(
           [lx2, ly2],
           lineLength,
           -30,
@@ -283,7 +288,7 @@ class EditorContainer extends React.Component {
         actionButton.setAttributeNS(null, 'pointer-events', 'bounding-box');
         actionButton.setAttributeNS(null, 'fill', 'rgb(237, 28, 36)');
 
-        tooltip.addEventListener('click', () => self.removeDraggable(this));
+        tooltip.addEventListener('click', () => removeDraggable(this));
         tooltip.appendChild(actionButton);
 
         this.controls.appendChild(tooltip);
@@ -298,7 +303,7 @@ class EditorContainer extends React.Component {
         });
       },
       onResize({ dx, dy }) {
-        self.setEditable(true);
+        setEditable(true);
 
         const { tr, tl } = this._getVertices();
 
@@ -700,6 +705,7 @@ class EditorContainer extends React.Component {
         });
         sjxEl.disable();
       }
+      break;
       default:
         break;
 

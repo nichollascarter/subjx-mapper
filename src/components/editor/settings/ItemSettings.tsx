@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles, withStyles } from '@mui/styles';
-import ColorPicker from '../../helpers/ColorPicker';
+import { ColorPicker } from '../../helpers/ColorPicker';
 
 import {
   Divider,

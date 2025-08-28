@@ -12,7 +12,7 @@ import {
   Slider
 } from '@mui/material';
 
-import ColorPicker from '../../helpers/ColorPicker';
+import { ColorPicker } from '@/components/helpers/ColorPicker';
 
 import {
   setEditorPaperSize,
@@ -24,7 +24,7 @@ import {
   setSnapSteps,
   setEditorGridSize,
   setAllowRotationOrigin
-} from '../../../actions';
+} from '@/actions';
 
 const useStyles = makeStyles(() => ({
   root: {

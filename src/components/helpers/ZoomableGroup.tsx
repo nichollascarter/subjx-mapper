@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 const ZoomableGroup = (props) => {
-  let zoomEl = useRef(null);
+  const zoomEl = useRef(null);
   const [transform, setTransform] = useState('matrix(1,0,0,1,0,0)');
   const mouse = { x: 0, y: 0, oldX: 0, oldY: 0, button: false };
   const matrix = [1, 0, 0, 1, 0, 0];
@@ -114,4 +114,4 @@ const ZoomableGroup = (props) => {
   );
 };
 
-export default ZoomableGroup;
+export { ZoomableGroup };

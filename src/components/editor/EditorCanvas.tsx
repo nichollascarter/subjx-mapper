@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles } from '@mui/styles';
 
-import ZoomableGroup from '../helpers/ZoomableGroup';
+import { ZoomableGroup } from '@/components/helpers/ZoomableGroup';
 import EditorContent from './EditorContent';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     '-webkit-box-flex': 1,
     '-ms-flex': 1,
@@ -131,7 +131,7 @@ const EditorCanvas = (props) => {
 
   useEffect(() => {
     onLayerChange?.(layersBar);
-  }, [layersBar]);
+  }, [layersBar, onLayerChange]);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -146,7 +146,7 @@ const EditorCanvas = (props) => {
           return setTimeout(() => setDropItems(false), 100);
         }
         break;
-      case 'grab':
+      case 'grab': {
         const container = containerAreaRef.current;
 
         setStartPoint({
@@ -156,6 +156,7 @@ const EditorCanvas = (props) => {
           scrollLeft: container.scrollLeft
         });
         break;
+      }
       case 'select':
         //onCanvasDown(e);
         break;
@@ -202,13 +203,13 @@ const EditorCanvas = (props) => {
     setLocalAction(null);
   };
 
-  const dropLayers = (e) => {
-    e.stopPropagation();
-    setParentLayer(true);
-  };
+  // const dropLayers = (e) => {
+  //   e.stopPropagation();
+  //   setParentLayer(true);
+  // };
 
   const svgPoint = (elem, x, y) => {
-    let p = elem.createSVGPoint();
+    const p = elem.createSVGPoint();
     p.x = x;
     p.y = y;
     return p.matrixTransform(elem.getScreenCTM().inverse());
@@ -226,9 +227,9 @@ const EditorCanvas = (props) => {
     document.getElementById('editable-content').appendChild(rect);
 
     const drawRect = (e) => {
-      let p = svgPoint(drawArea1, e.clientX, e.clientY);
-      let w = Math.abs(p.x - start.x);
-      let h = Math.abs(p.y - start.y);
+      const p = svgPoint(drawArea1, e.clientX, e.clientY);
+      const w = Math.abs(p.x - start.x);
+      const h = Math.abs(p.y - start.y);
       if (p.x > start.x) {
         p.x = start.x;
       }

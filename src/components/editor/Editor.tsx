@@ -126,9 +126,9 @@ const Editor = (props) => {
         const ref = domNode.attribs['xlink:href'] || domNode.attribs.href;
 
         if (!ref) return domNode;
-        const source = domNode.parent.children.find((childNode) => {
-          return childNode.attribs && ('#' + childNode.attribs.id === ref);
-        });
+        // const source = domNode.parent.children.find((childNode) => {
+        //   return childNode.attribs && ('#' + childNode.attribs.id === ref);
+        // });
       }
 
       if (domNode.type === 'tag' && allowedSvgs.indexOf(domNode.name) !== -1) {
@@ -177,7 +177,7 @@ const Editor = (props) => {
   };
 
   const handleClearArea = () => {
-    setContent(!Boolean(content));
+    setContent(!content);
   };
 
   const appendNewItem = useCallback((_, [tagName, nodeProps]) => {

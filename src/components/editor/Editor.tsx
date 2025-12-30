@@ -1,15 +1,17 @@
-import { useState, useCallback, createElement } from 'react';
+import { useState, useCallback, createElement, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles } from '@mui/styles';
-import parse from 'html-react-parser';
+import parse, { DomElement } from 'html-react-parser';
 import { saveAs } from 'file-saver';
 import 'construct-style-sheets-polyfill';
 import {
   CssBaseline,
   Button,
-  Box
+  Box,
+  Theme
 } from '@mui/material';
 import { Stack } from '@mui/material';
+import EventBus from 'js-event-bus';
 
 import { Section } from '@/components/ui/Section';
 
@@ -29,12 +31,12 @@ const allowedSvgs = [
 
 const drawerWidth = 240;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { eventBus: EventBus; editorPaperSize: number }) => ({
   eventBus: state.eventBus,
   editorPaperSize: state.editorPaperSize
 });
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     display: 'flex',
     marginTop: 0,
@@ -78,7 +80,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Editor = (props) => {
+const Editor = (props:{ eventBus: EventBus; editorPaperSize: { width: number, height: number } }) => {
   const {
     editorPaperSize,
     eventBus
@@ -87,12 +89,12 @@ const Editor = (props) => {
   const classes = useStyles();
   const [content, setContent] = useState(null);
   const [settingsTab, setSettingsTab] = useState('canvas');
-  const [layersBar, setLayersBar] = useState(null);
+  const [layersBar, setLayersBar] = useState<string | null>(null);
   const [dropLayer, setParentLayer] = useState(false);
 
   const parsedStyleSheet = new CSSStyleSheet();
 
-  const getStyleRule = (className) => {
+  const getStyleRule = (className: string) => {
     let cssText = {};
     const classes = parsedStyleSheet.rules || parsedStyleSheet.cssRules;
     for (let x = 0; x < classes.length; x++) {
@@ -110,7 +112,7 @@ const Editor = (props) => {
   };
 
   const parserOptions = {
-    replace(domNode) {
+    replace(domNode: DomElement) {
       if (domNode.name === 'style') {
         const styleSheet = new CSSStyleSheet();
         styleSheet.replace(domNode.children[0].data);
@@ -154,7 +156,7 @@ const Editor = (props) => {
     }
   };
 
-  const handleImport = (res) => {
+  const handleImport = (res: string) => {
     let reactSVGEl = parse(res, parserOptions);
 
     if (Array.isArray(reactSVGEl)) {
@@ -168,19 +170,20 @@ const Editor = (props) => {
 
   const handleExport = () => {
     const rootHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="${editorPaperSize.width}" height="${editorPaperSize.height}">
-                ${document.getElementById('editable-content').innerHTML}
-            </svg>`;
+      <svg xmlns="http://www.w3.org/2000/svg" width="${editorPaperSize.width}" height="${editorPaperSize.height}">
+          ${document.getElementById('editable-content')?.innerHTML}
+      </svg>
+    `;
 
     const blob = new Blob([rootHTML]);
     saveAs(blob, `export_${(new Date()).toISOString()}.svg`);
   };
 
   const handleClearArea = () => {
-    setContent(!content);
+    setContent(null);
   };
 
-  const appendNewItem = useCallback((_, [tagName, nodeProps]) => {
+  const appendNewItem = useCallback((_, [tagName, nodeProps]: [string, any]) => {
     const newElement = createElement(tagName, nodeProps);
 
     const wrapper = document.createElementNS("http://www.w3.org/2000/svg", tagName);
@@ -188,23 +191,23 @@ const Editor = (props) => {
       wrapper.setAttribute(key, value);
     });
 
-    document.querySelector('#editable-content').appendChild(wrapper);
+    document.querySelector('#editable-content')?.appendChild(wrapper);
   }, []);
 
-  useState(() => {
+  useEffect(() => {
     eventBus.on('settings', value => setSettingsTab(value));
   }, []);
 
   const { component: SettingsComponent } = [
     {
-      component: _ => <CanvasSettings {..._} />,
+      component: (p: React.FC<unknown>) => <CanvasSettings {...p} />,
       condition: settingsTab === 'canvas'
     },
     {
-      component: _ => <ItemSettings {..._} />,
+      component: (p: React.FC<unknown>) => <ItemSettings {...p} />,
       condition: settingsTab === 'item'
     }
-  ].find(({ condition }) => !!condition);
+  ].find(({ condition }) => !!condition) ?? { component: () => <></>};
 
   return (
     <div className={classes.root}>
@@ -240,8 +243,9 @@ const Editor = (props) => {
                       variant='contained'
                       color='primary'
                       size='small'
-                      onMouseUp={() => setParentLayer(true)}>
-                                            Exit
+                      onMouseUp={() => setParentLayer(true)}
+                    >
+                      Exit
                     </Button>
                   </div>
                 )
@@ -255,7 +259,7 @@ const Editor = (props) => {
             topOffset={87}
             rightOffset={0}
             mouseAction='edit'
-            onLayerChange={(v) => {
+            onLayerChange={(v: string | null) => {
               setLayersBar(v);
               setParentLayer(false);
             }}

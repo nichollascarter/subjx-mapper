@@ -19,6 +19,7 @@ import {
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
 import { setEditorAction, activateEditorGrid } from '@/actions';
+import EventBus from 'js-event-bus';
 
 const useStyles = makeStyles(() => ({
   flex: {
@@ -35,7 +36,7 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: { editorAction: string; editorGrid: boolean; eventBus: EventBus; }) => {
   return {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -43,9 +44,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  $setEditorAction: (act) => dispatch(setEditorAction(act)),
-  $activateEditorGrid: (act) => dispatch(activateEditorGrid(act))
+const mapDispatchToProps = (dispatch: (arg0: { type: string; editorAction?: any; editorGrid?: boolean; }) => any) => ({
+  $setEditorAction: (act: { editorAction: any; }) => dispatch(setEditorAction(act)),
+  $activateEditorGrid: (act: { editorGrid: boolean; }) => dispatch(activateEditorGrid(act))
 });
 
 const items = [
@@ -56,7 +57,7 @@ const items = [
   // ['image', Image]
 ];
 
-const EditorToolbar = (props) => {
+const EditorToolbar = (props: { $setEditorAction?: any; $activateEditorGrid?: any; onDrop?: any; editorAction?: any; editorGrid?: any; eventBus?: any; }) => {
   const classes = useStyles();
 
   const {
@@ -65,11 +66,11 @@ const EditorToolbar = (props) => {
     eventBus
   } = props;
 
-  const setEditorAction = (editorAction) => () => {
+  const setEditorAction = (editorAction: string) => () => {
     props.$setEditorAction({ editorAction });
   };
 
-  const activateEditorGrid = (editorGrid) => {
+  const activateEditorGrid = (editorGrid: any) => {
     props.$activateEditorGrid({ editorGrid });
   };
 
@@ -83,12 +84,12 @@ const EditorToolbar = (props) => {
       textColor: 'transparent'
     },
     onInit() { },
-    onDrop(e) {
+    onDrop(e: React.MouseEvent<HTMLElement>) {
       e.preventDefault();
-      const itemType = this.elements[0].getAttribute('data-type');
+      const itemType = (this as any).elements[0].getAttribute('data-type');
       let newItem = null;
 
-      const editorRef = document.querySelector('#editor-background');
+      const editorRef = document.querySelector('#editor-background')!;
 
       const offset = editorRef.getBoundingClientRect(),
         x = e.clientX - offset.left + editorRef.scrollLeft,
@@ -197,7 +198,7 @@ const EditorToolbar = (props) => {
       }}
     >
       <div className={classes.flex}>
-        {buttons.map(({ type, component, action, selected, value }, index) => (
+        {buttons.map(({ component, action, selected }, index) => (
           <div key={`${index}button`} className={classes.toolbar}>
             <ExtendedButton disabled={selected} onClick={() => action()}>
               {component}
@@ -206,7 +207,7 @@ const EditorToolbar = (props) => {
         ))}
         {items.map(([text, Icon]) => (
           <div key={`${text}button`} className={classes.toolbar}>
-            <ExtendedButton ref={(el) => el && subjx(el).clone(cloneConfig)} data-type={text}>
+            <ExtendedButton ref={(el) => { if (el) subjx(el).clone(cloneConfig); }} data-type={text}>
               <Icon strokeWidth={0.5} />
             </ExtendedButton>
           </div>

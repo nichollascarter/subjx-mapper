@@ -1728,6 +1728,11 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.7.tgz#4158d3105276773d5b7695cd4834b1722e4f37a8"
   integrity sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==
 
+"@types/file-saver@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@types/file-saver/-/file-saver-2.0.7.tgz#8dbb2f24bdc7486c54aa854eb414940bbd056f7d"
+  integrity sha512-dNKVfHd/jk0SkR/exKGj2ggkB45MAkzvWCaqLUUgkyjITkGNzH8H+yUwr+BLJUBjZOe9w8X3wgmXhZDRg1ED6A==
+
 "@types/json-schema@*", "@types/json-schema@^7.0.15":
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
@@ -4566,10 +4571,10 @@ stylis@4.2.0:
   resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.2.0.tgz#79daee0208964c8fe695a42fcffcac633a211a51"
   integrity sha512-Orov6g6BB1sDfYgzWfTHDOxamtX1bE/zo104Dh9e6fqJ3PooipYyfJ0pUmrZO2wAvO8YbEyeFrkV91XTsGMSrw==
 
-subjx@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/subjx/-/subjx-1.1.1.tgz#cd603051f82f16ef48193e35e5a55aa5f326629b"
-  integrity sha512-IfuM61RJZqwn3X6WPA6Zq3fSkOVOaxUWUimieJ6rhOO61CrFm8hwhs+mk6jrd1KDYxGOv2EKGCnHvFX90fPDJw==
+subjx@1.1.2-rc.1:
+  version "1.1.2-rc.1"
+  resolved "https://registry.yarnpkg.com/subjx/-/subjx-1.1.2-rc.1.tgz#70267883e9887a3b165a12b8a29709972dd4fefa"
+  integrity sha512-s+uD9Sqc4Cf6BkWHiSbfkeBaorOMOUlwsMFgBeyEo+nfYl0Jrxv13daW/8JpnbIscmMM0TCKqX6Rl1cvOLM0yA==
 
 supports-color@^7.1.0:
   version "7.2.0"

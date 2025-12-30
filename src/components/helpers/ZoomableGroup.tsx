@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, JSXElementConstructor, ReactElement, ReactNode, ReactPortal } from 'react';
 
-const ZoomableGroup = (props) => {
-  const zoomEl = useRef(null);
+const ZoomableGroup = (props: { enable: unknown; children: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => {
+  const zoomEl = useRef<SVGElement | null>(null);
   const [transform, setTransform] = useState('matrix(1,0,0,1,0,0)');
   const mouse = { x: 0, y: 0, oldX: 0, oldY: 0, button: false };
   const matrix = [1, 0, 0, 1, 0, 0];
@@ -55,15 +55,15 @@ const ZoomableGroup = (props) => {
     mouse.y = event.clientY;
     if (mouse.button) {
       view.pan({ x: mouse.x - mouse.oldX, y: mouse.y - mouse.oldY });
-      view.applyTo(el);
+      view.applyTo();
     }
     event.preventDefault();
-  });
+  }, []);
 
   const mouseWheelEvent = useCallback((e) => {
     if (props.enable === false) return;
     const el = zoomEl.current;
-    const offset = el.parentNode.getBoundingClientRect();
+    const offset = el?.parentNode?.getBoundingClientRect();
     const x = e.clientX - offset.left;
     const y = e.clientY - offset.top;
 
@@ -80,7 +80,7 @@ const ZoomableGroup = (props) => {
     view.pan(pos);
     view.scaleAt({ x: 0, y: 0 }, 1);
     view.applyTo(zoomEl.current);
-  });
+  }, []);
 
   const events = [
     ['mousemove', mouseEvent],

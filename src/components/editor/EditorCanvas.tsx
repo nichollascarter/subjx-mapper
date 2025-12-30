@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 
 import { ZoomableGroup } from '@/components/helpers/ZoomableGroup';
 import EditorContent from './EditorContent';
+import EventBus from 'js-event-bus';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -25,7 +26,7 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const canvasGrid = (paperSize, gridSize) => {
+const canvasGrid = (paperSize: { w: number; h: number }, gridSize: number) => {
   const grid = gridSize * 10;
   return (
     <g>
@@ -61,7 +62,16 @@ const canvasGrid = (paperSize, gridSize) => {
   );
 };
 
-const mapStateToProps = (state) => (
+const mapStateToProps = (
+  state:
+  {
+    editorAction: any;
+    editorGrid: any;
+    editorGridSize: any;
+    editorPaperSize: any;
+    eventBus: EventBus;
+  }
+) => (
   {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -71,7 +81,21 @@ const mapStateToProps = (state) => (
   }
 );
 
-const EditorCanvas = (props) => {
+const EditorCanvas = (
+  props: {
+    editorPaperSize: any;
+    eventBus: any;
+    editorAction: any;
+    editorGrid: any;
+    editorGridSize: number;
+    leftOffset: number;
+    rightOffset: number;
+    topOffset: number;
+    children?: any;
+    onLayerChange: (v: string | null) => void;
+    dropLayer?: boolean;
+    mouseAction: string;
+  }) => {
   const classes = useStyles();
   const {
     editorAction,
@@ -98,22 +122,24 @@ const EditorCanvas = (props) => {
     y: (paperHeight - initialH) / 2
   });
 
-  let canvasEl = null;
-  let controlsRef = null;
-  const workAreaRef = useRef(null);
-  const containerAreaRef = useRef(null);
-  const rootSVG = useRef(null);
+  const canvasEl = useRef<SVGElement | null>(null);
+  const controlsRef = useRef<SVGElement | null>(null);
+  const workAreaRef = useRef<HTMLDivElement | null>(null);
+  const containerAreaRef = useRef<HTMLDivElement | null>(null);
+  const rootSVG = useRef<SVGElement | null>(null);
 
-  const [localAction, setLocalAction] = useState(null);
-  const [layersBar, setLayersBar] = useState(null);
-  const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+  const [localAction, setLocalAction] = useState<string | null>(null);
+  const [layersBar, setLayersBar] = useState<string | null>(null);
+  const [startPoint, setStartPoint] = useState({ x: 0, y: 0, scrollTop: 0, scrollLeft: 0 });
 
   const [dropItems, setDropItems] = useState(false);
 
-  const scrollToRef = (ref) => {
+  const scrollToRef = (ref: React.RefObject<HTMLElement | null>) => {
     const container = containerAreaRef.current;
-    container.scrollTop = (ref.current.clientHeight - container.clientHeight) / 2;
-    container.scrollLeft = (ref.current.clientWidth - container.clientWidth) / 2;
+    if (!container || !ref.current) return;
+
+    container.scrollTop = (ref.current.clientHeight - container?.clientHeight) / 2;
+    container.scrollLeft = (ref.current.clientWidth - container?.clientWidth) / 2;
   };
 
   useEffect(() => {
@@ -133,14 +159,14 @@ const EditorCanvas = (props) => {
     onLayerChange?.(layersBar);
   }, [layersBar, onLayerChange]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     switch (editorAction) {
 
       case 'edit':
-        if (controlsRef.contains(e.target)) return;
+        if (controlsRef.current?.contains(e.target as HTMLDivElement)) return;
 
-        if (!canvasEl.children[0].contains(e.target)) {
+        if (!canvasEl.current?.children[0].contains(e.target as HTMLDivElement)) {
           setDropItems(true);
           props.eventBus.emit('settings', null, 'canvas');
           return setTimeout(() => setDropItems(false), 100);
@@ -152,8 +178,8 @@ const EditorCanvas = (props) => {
         setStartPoint({
           x: e.clientX,
           y: e.clientY,
-          scrollTop: container.scrollTop,
-          scrollLeft: container.scrollLeft
+          scrollTop: container?.scrollTop ?? 0,
+          scrollLeft: container?.scrollLeft ?? 0
         });
         break;
       }
@@ -173,16 +199,18 @@ const EditorCanvas = (props) => {
     setLocalAction(editorAction);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: { preventDefault: () => void; clientX: number; clientY: number; }) => {
     e.preventDefault();
 
     switch (localAction) {
 
       case 'grab': {
-        const dx = (startPoint.x - e.clientX) * 1; // scale
-        const dy = (startPoint.y - e.clientY) * 1; // scale
+        const dx = (startPoint.x - e.clientX) * 1;
+        const dy = (startPoint.y - e.clientY) * 1;
 
         const container = containerAreaRef.current;
+        if (!container) return;
+  
         container.scrollTop = startPoint.scrollTop + dy;
         container.scrollLeft = startPoint.scrollLeft + dx;
         break;
@@ -208,26 +236,26 @@ const EditorCanvas = (props) => {
   //   setParentLayer(true);
   // };
 
-  const svgPoint = (elem, x, y) => {
-    const p = elem.createSVGPoint();
+  const svgPoint = (elem: SVGSVGElement, x: any, y: any) => {
+    const p = elem!.createSVGPoint();
     p.x = x;
     p.y = y;
-    return p.matrixTransform(elem.getScreenCTM().inverse());
+    return p.matrixTransform(elem!.getScreenCTM()?.inverse());
   };
 
-  const drawElement = (event) => {
+  const drawElement = (event: { clientX: any; clientY: any; }) => {
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttributeNS(null, 'stroke-width', 2);
+    rect.setAttributeNS(null, 'stroke-width', '2');
     rect.setAttributeNS(null, 'fill', 'none');
     rect.setAttributeNS(null, 'stroke', '#000');
 
-    const drawArea1 = document.getElementById('editor-background');
+    const drawArea = document.getElementById('editor-background') as unknown as SVGSVGElement;
 
-    const start = svgPoint(drawArea1, event.clientX, event.clientY);
-    document.getElementById('editable-content').appendChild(rect);
+    const start = svgPoint(drawArea, event.clientX, event.clientY);
+    document.getElementById('editable-content')?.appendChild(rect);
 
-    const drawRect = (e) => {
-      const p = svgPoint(drawArea1, e.clientX, e.clientY);
+    const drawRect = (e: { clientX: any; clientY: any; }) => {
+      const p = svgPoint(drawArea, e.clientX, e.clientY);
       const w = Math.abs(p.x - start.x);
       const h = Math.abs(p.y - start.y);
       if (p.x > start.x) {
@@ -238,19 +266,19 @@ const EditorCanvas = (props) => {
         p.y = start.y;
       }
 
-      rect.setAttributeNS(null, 'x', p.x);
-      rect.setAttributeNS(null, 'y', p.y);
-      rect.setAttributeNS(null, 'width', w);
-      rect.setAttributeNS(null, 'height', h);
+      rect.setAttributeNS(null, 'x', `'${p.x}'`);
+      rect.setAttributeNS(null, 'y', `'${p.y}'`);
+      rect.setAttributeNS(null, 'width',`'${w}'`);
+      rect.setAttributeNS(null, 'height', `'${h}'`);
     };
 
     const endDraw = () => {
-      drawArea1.removeEventListener('mousemove', drawRect);
-      drawArea1.removeEventListener('mouseup', endDraw);
+      drawArea.removeEventListener('mousemove', drawRect);
+      drawArea.removeEventListener('mouseup', endDraw);
     };
 
-    drawArea1.addEventListener('mousemove', drawRect);
-    drawArea1.addEventListener('mouseup', endDraw);
+    drawArea.addEventListener('mousemove', drawRect);
+    drawArea.addEventListener('mouseup', endDraw);
   };
 
   return (
@@ -301,15 +329,15 @@ const EditorCanvas = (props) => {
                 </g>
                 <g
                   id='editor-canvas'
-                  ref={el => canvasEl = el}
+                  ref={e => { canvasEl.current = e; }}
                   className={classes.page}
                 >
                   <EditorContent
-                    root={rootSVG}
+                    root={rootSVG.current}
                     editable={editorAction === 'edit'}
                     selectable={editorAction === 'select'}
                     content={content}
-                    onLayerChange={(value) => {
+                    onLayerChange={(value: string) => {
                       setLayersBar(value);
                     }}
                     dropLayer={dropLayer}
@@ -318,7 +346,7 @@ const EditorCanvas = (props) => {
                 </g>
               </g>
             </ZoomableGroup>
-            <g id='controls-container' ref={div => controlsRef = div} />
+            <g id='controls-container' ref={div => { controlsRef.current = div; }} />
           </svg>
         </div>
       </div>

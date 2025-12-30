@@ -22,11 +22,12 @@
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
     "redux": "^4.0.5",
-    "subjx": "^1.1.1"
+    "subjx": "1.1.2-rc.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.28.0",
     "@svgr/rollup": "^8.1.0",
+    "@types/file-saver": "^2.0.7",
     "@types/react-color": "^3.0.13",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",

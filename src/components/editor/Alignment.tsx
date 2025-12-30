@@ -3,16 +3,18 @@ import {
   VerticalAlignCenter as AlignCenter,
   VerticalAlignBottom as AlignIcon
 } from '@mui/icons-material';
+import EventBus from 'js-event-bus';
+
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: { eventBus: EventBus }) => {
   return {
     eventBus: state.eventBus
   };
 };
 
-const Alignment = (props) => {
+const Alignment = (props: { eventBus: EventBus }) => {
   const {
     eventBus
   } = props;

@@ -5,8 +5,9 @@ import {
 } from '@mui/icons-material';
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
+import EventBus from 'js-event-bus';
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (/** @type {{ editorAction: string; editorGrid: boolean; eventBus: EventBus; }} */ state) => {
   return {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -14,7 +15,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const UndoRedo = (props) => {
+const UndoRedo = (/** @type {{ eventBus: EventBus; }} */ props) => {
   const {
     eventBus
   } = props;

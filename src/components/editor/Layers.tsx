@@ -9,14 +9,15 @@ import {
 } from '@mui/icons-material';
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
+import EventBus from 'js-event-bus';
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: { eventBus: EventBus }) => {
   return {
     eventBus: state.eventBus
   };
 };
 
-const Layers = (props) => {
+const Layers = (props: { eventBus: EventBus }) => {
   const {
     eventBus
   } = props;

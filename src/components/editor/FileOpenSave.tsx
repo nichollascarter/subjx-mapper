@@ -8,8 +8,14 @@ import {
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
 import { readText } from '@/util/file-reader';
+import EventBus from 'js-event-bus';
 
-const mapStateToProps = (state: { editorAction: 'string'; editorGrid: boolean; eventBus: any; }) => {
+const mapStateToProps = (
+  state: {
+    editorAction: string;
+    editorGrid: boolean;
+    eventBus: EventBus; }
+  ) => {
   return {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -17,7 +23,7 @@ const mapStateToProps = (state: { editorAction: 'string'; editorGrid: boolean; e
   };
 };
 
-const FileOpenSave = (props: { onImport: (v: string) => void; onExport: () => void }) => {
+const FileOpenSave = (props: { onImport: (v: string) => void; onExport: () => void; onClearArea: () => void; }) => {
   const [fileSelector, setFileSelector] = useState(
     document.createElement('input')
   );
@@ -31,10 +37,10 @@ const FileOpenSave = (props: { onImport: (v: string) => void; onExport: () => vo
 
     setFileSelector(fileSelector);
 
-    const loadFiles = async (e: { target: any; }) => {
+    const loadFiles = async (e: Event) => {
       try {
         const res = await readText(e.target);
-        props.onImport(res);
+        props.onImport(res as string);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(err);
@@ -44,10 +50,10 @@ const FileOpenSave = (props: { onImport: (v: string) => void; onExport: () => vo
     fileSelector.addEventListener('change', loadFiles, false);
   }, [props]);
 
-  const handleFileSelect = (e: { preventDefault: () => void; target: { value: string; }; }) => {
+  const handleFileSelect = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     fileSelector.click();
     e.preventDefault();
-    e.target.value = '';
+    (e.target as HTMLInputElement).value = '';
   };
 
   const handleExportFile = () => {

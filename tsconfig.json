@@ -10,7 +10,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "lib": ["ESNext", "DOM"]
+    "lib": ["ESNext", "DOM", "dom.iterable"]
   },
   "include": ["src"]
 }

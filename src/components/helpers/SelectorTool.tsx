@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-const SelectorTool = (props) => {
+const SelectorTool = (props: { enable: boolean, containerRef: React.RefObject<HTMLElement> }) => {
   const selectorRef = useRef(null);
 
   const [selectorActive, setOpenSelector] = useState(props.enable);
@@ -12,17 +12,19 @@ const SelectorTool = (props) => {
   });
 
   useEffect(() => {
-    const container = props.containerRef.current;
+    const container = props?.containerRef?.current;
     if (!container) return;
+
     container.addEventListener('mousedown', handleOpenSelector);
     return () => {
       container.removeEventListener('mousedown', handleOpenSelector);
     };
   }, [props.containerRef]);
 
-  const handleOpenSelector = (e) => {
+  const handleOpenSelector = (e: MouseEvent) => {
     if (!props.enable) return;
-    const $container = props.containerRef.current;
+
+    const $container = props.containerRef?.current;
 
     const offset = $container.getBoundingClientRect(),
       x = e.clientX - offset.left + $container.scrollLeft,
@@ -51,15 +53,15 @@ const SelectorTool = (props) => {
       }));
 
       [...(document.getElementsByClassName('isolated-layer')[0].childNodes || [])].map((el) => {
-        return el.nodeType === 1 && isCollapsed(selectorRef.current, el)
-          ? el.classList.add('subjx-selected')
+        return el.nodeType === 1 && selectorRef.current && isCollapsed(selectorRef.current, el as SVGGraphicsElement)
+          ? (el as Element).classList.add('subjx-selected')
           : null;
       });
 
       setOpenSelector(false);
     };
 
-    const open = (e) => {
+    const open = (e: MouseEvent) => {
       openSelector(e, $container, data);
     };
 
@@ -67,7 +69,11 @@ const SelectorTool = (props) => {
     document.addEventListener('mousemove', open);
   };
 
-  const openSelector = (e, canvas, { initialH, initialW }) => {
+  const openSelector = (
+    e: MouseEvent,
+    canvas: HTMLElement,
+    { initialH, initialW }: { initialH: number, initialW: number }
+  ) => {
     const offset = canvas.getBoundingClientRect();
 
     const x = e.clientX - offset.left + canvas.scrollLeft;
@@ -77,7 +83,9 @@ const SelectorTool = (props) => {
 
     let nextSelectorStyle = {
       width: w,
-      height: h
+      height: h,
+      left: 0,
+      top: 0
     };
 
     if (x <= initialW && y >= initialH) {
@@ -104,17 +112,21 @@ const SelectorTool = (props) => {
     }));
   };
 
-  const isCollapsed = (selector, rect) => {
-    const source = selector.getBoundingClientRect();
+  const isCollapsed = (el: HTMLElement, rect: SVGGraphicsElement) => {
+    const source = el.getBoundingClientRect();
     const dest = rect.getBBox();
-        
-    return (source.left < dest.left + dest.width && source.left + source.width > dest.left &&
-            source.top < dest.top + dest.height && source.top + source.height > dest.top);
+
+    return (
+      source.left < dest.left + dest.width &&
+      source.left + source.width > dest.left &&
+      source.top < dest.top + dest.height &&
+      source.top + source.height > dest.top
+    );
   };
 
   return (
     <div
-      ref={(el) => selectorRef.current = el}
+      ref={selectorRef}
       className={`selector${selectorActive ? ' selector-active' : ''}`}
       style={{ ...selectorStyle }}
     >

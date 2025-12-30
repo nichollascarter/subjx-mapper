@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { connect } from 'react-redux';
 import subjx from 'subjx';
 import DragSelect from 'dragselect';
@@ -19,11 +19,11 @@ const subjxConfiguration = {
   rotatorOffset: 30
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (arg0: { type: string; items: any; }) => any) => ({
   $setSelectedItems: (act) => dispatch(setSelectedItems(act))
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { editorGridSize: any; allowDragging: any; allowResizing: any; allowRotating: any; allowProportions: any; allowRestrictions: any; allowTransformOrigin: any; snapSteps: any; eventBus: any; undoStack: any; }) => ({
   editorGridSize: state.editorGridSize,
   allowDragging: state.allowDragging,
   allowResizing: state.allowResizing,
@@ -38,11 +38,11 @@ const mapStateToProps = (state) => ({
 
 class EditorContainer extends React.Component {
 
-  root = null;
+  root: SVGGElement | null = null;
   editable = false;
-  selectable = null;
+  selectable: DragSelect | null = null;
   items = [];
-  currentLayer = null;
+  currentLayer: SVGGElement | null = null;
   ignoreStoring = false;
 
   shouldComponentUpdate(nextProps) {
@@ -53,7 +53,7 @@ class EditorContainer extends React.Component {
         return true;
       }
     }
-        
+
     if (this.root) {
       if (nextProps.content !== this.props.content) {
         this.dropItems();
@@ -78,7 +78,7 @@ class EditorContainer extends React.Component {
 
     if (
       (nextProps.dropItems === true || !nextProps.editable) &&
-            this.items.length
+      this.items.length
     ) {
       this.dropItems();
     }
@@ -106,18 +106,18 @@ class EditorContainer extends React.Component {
     this.handleRedo = this.handleRedo.bind(this);
     this.reloadDraggables = this.reloadDraggables.bind(this);
 
-    this.root.addEventListener('mouseup', this.handleClick);
-    this.root.addEventListener('dblclick', this.handleDoubleClick);
-    document.addEventListener('keydown', this.handleKeyDown);
+    this.root?.addEventListener('mouseup', this.handleClick);
+    this.root?.addEventListener('dblclick', this.handleDoubleClick);
+    this.root?.classList.add('isolated-layer');
 
-    this.root.classList.add('isolated-layer');
+    document.addEventListener('keydown', this.handleKeyDown);
 
     this.subscribeToEvents();
   }
 
   componentWillUnmount() {
-    this.root.removeEventListener('mouseup', this.handleClick);
-    this.root.removeEventListener('dblclick', this.handleDoubleClick);
+    this.root?.removeEventListener('mouseup', this.handleClick);
+    this.root?.removeEventListener('dblclick', this.handleDoubleClick);
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
@@ -160,14 +160,14 @@ class EditorContainer extends React.Component {
     }).map(([key, event]) => eventBus.on(event, () => this.applyAlignment(key)));
   }
 
-  changeLayerPosition(position) {
+  changeLayerPosition(position: string) {
     const { items } = this;
 
     this.items = [];
 
     const nextItems = items.map((item) => {
       const { elements } = item;
-      item.disable();
+      item?.disable();
 
       const nextElements = elements.map((element) => {
         if (position === 'front')
@@ -192,7 +192,8 @@ class EditorContainer extends React.Component {
   }
 
   setEditable(value) {
-    this.editable = value;
+    console.log(this);
+    // this.editable = value;
   }
 
   setDraggable(target) {
@@ -483,7 +484,7 @@ class EditorContainer extends React.Component {
     selectedItems.subscribe('callback', ({ items: selected }) => {
       const { items } = this;
 
-      while (items.length > 0) items.pop().disable();
+      while (items.length > 0) items?.pop().disable();
       if (!selected.length) return;
 
       const newItems = this.setDraggable(selected);
@@ -505,7 +506,7 @@ class EditorContainer extends React.Component {
     const target = [...currentLayer.childNodes]
       .find((child) => (
         !(child.classList && child.classList.contains('sjx-drag')) &&
-                child.contains(e.target)
+        child.contains(e.target)
       )) || (currentLayer === e.target ? e.target : null);
 
     if (!target) return;
@@ -531,7 +532,7 @@ class EditorContainer extends React.Component {
     const target = [...currentLayer.childNodes]
       .find((child) => (
         (child.classList && child.classList.contains('sjx-drag')) &&
-                child.contains(e.target)
+        child.contains(e.target)
       ));
 
     if (target && target.tagName === 'g') {
@@ -705,7 +706,7 @@ class EditorContainer extends React.Component {
         });
         sjxEl.disable();
       }
-      break;
+        break;
       default:
         break;
 
@@ -714,7 +715,7 @@ class EditorContainer extends React.Component {
 
   render() {
     return (
-      <g id='editable-content' ref={el => this.root = el} >
+      <g id='editable-content' ref={el => { this.root = el; }} >
         {this.props.content}
       </g>
     );

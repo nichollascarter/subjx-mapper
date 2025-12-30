@@ -6,8 +6,9 @@ import {
 } from '@mui/icons-material';
 
 import { ExtendedButton } from '@/components/ui/ExtendedButton';
+import EventBus from 'js-event-bus';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     display: 'flex',
     alignItems: 'center',
@@ -25,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: { editorAction: boolean; editorGrid: boolean; eventBus: EventBus; }) => {
   return {
     editorAction: state.editorAction,
     editorGrid: state.editorGrid,
@@ -33,7 +34,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const EditorSettings = (props) => {
+const EditorSettings = (props: { eventBus: EventBus; }) => {
   const classes = useStyles();
 
   const {
@@ -48,7 +49,7 @@ const EditorSettings = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.flex}>
-        {options.map(({ type, component, action, selected, value }, index) => (
+        {options.map(({ component, action, selected }, index) => (
           <div key={`${index}button`} className={classes.toolbar}>{
             <ExtendedButton disabled={selected} onClick={() => action()}>{component}</ExtendedButton>
           }</div>
